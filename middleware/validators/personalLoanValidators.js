@@ -25,12 +25,49 @@ const applyValidator = [
     .trim()
     .matches(/^\d{6}$/)
     .withMessage("Enter a valid 6-digit pincode"),
+  body("employmentType")
+    .optional()
+    .isIn(["Salaried"])
+    .withMessage("Employment type must be Salaried"),
+  body("companyName").optional().trim().notEmpty().withMessage("Company name is required"),
+  body("companyType").optional().trim().notEmpty().withMessage("Company type is required"),
+  body("companyTypeOther")
+    .optional()
+    .trim()
+    .if(body("companyType").equals("Other"))
+    .notEmpty()
+    .withMessage("Please mention company type"),
+  body("monthlySalary")
+    .optional()
+    .isFloat({ min: 0 })
+    .withMessage("Monthly salary must be a non-negative number"),
+  body("salaryReceivedAs")
+    .optional()
+    .trim()
+    .notEmpty()
+    .withMessage("Salary received as is required"),
+  body("salaryReceivedAsOther")
+    .optional()
+    .trim()
+    .if(body("salaryReceivedAs").equals("Other"))
+    .notEmpty()
+    .withMessage("Please mention salary received as"),
+  body("salaryBankName")
+    .optional()
+    .trim()
+    .notEmpty()
+    .withMessage("Select salary bank name"),
+  body("salaryBankOther")
+    .optional()
+    .trim()
+    .if(body("salaryBankName").equals("Other"))
+    .notEmpty()
+    .withMessage("Please mention bank name"),
   body("existingEMI").optional().isFloat({ min: 0 }).withMessage("Existing EMI must be a non-negative number"),
   body("existingLoanAmount")
     .optional()
     .isFloat({ min: 0 })
     .withMessage("Existing loan amount must be a non-negative number"),
-  // status is server-assigned only — reject if a client tries to set it directly.
   body("status").not().exists().withMessage("status cannot be set by the applicant"),
   handleValidationErrors,
 ];

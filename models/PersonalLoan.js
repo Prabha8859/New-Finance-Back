@@ -7,6 +7,13 @@ const personalLoanSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+
+    loanType: {
+      type: String,
+      enum: ["Personal Loan", "Business Loan", "Home Loan", "Car Loan", "Education Loan", "Other"],
+      default: "Personal Loan",
+    },
+
     loanAmount: {
       type: Number,
       required: [true, "Loan amount is required"],
@@ -15,7 +22,22 @@ const personalLoanSchema = new mongoose.Schema(
       type: Number,
       required: [true, "Loan tenure is required"],
     },
-    employmentType: String,
+
+    employmentType: {
+      type: String,
+      enum: ["Salaried"],
+      default: "Salaried",
+    },
+
+    companyName: String,
+    companyType: String,
+    companyTypeOther: String,
+    monthlySalary: Number,
+    salaryReceivedAs: String,
+    salaryReceivedAsOther: String,
+    salaryBankName: String,
+    salaryBankOther: String,
+
     existingEMI: {
       type: Number,
       default: 0,
@@ -25,7 +47,10 @@ const personalLoanSchema = new mongoose.Schema(
       default: 0,
     },
     existingBanks: [String],
+    otherBankList: [String],
     existingLoanTypes: [String],
+    otherLoanList: [String],
+
     fullName: {
       type: String,
       required: [true, "Full name is required"],
@@ -43,8 +68,8 @@ const personalLoanSchema = new mongoose.Schema(
     residenceStatus: String,
     status: {
       type: String,
-      enum: ["Pending", "Approved", "Rejected"],
-      default: "Pending",
+      enum: ["Pending", "Approved", "Rejected", "Submitted"],
+      default: "Submitted",
     },
   },
   {
