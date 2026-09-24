@@ -120,6 +120,30 @@ const normalizeValues = (values) => {
   return normalizeGrouped(values);
 };
 
+const appendUniqueValue = (values, rawValue) => {
+  const safeValues = Array.isArray(values) ? values : [];
+  const valueText = String(rawValue ?? "").trim();
+
+  if (!valueText) {
+    throw badRequest("Value is required");
+  }
+
+  if (valueText.length > 150) {
+    throw badRequest("Custom value is too long (max 150 characters)");
+  }
+
+  const normalizedValues = safeValues.map((item) => String(item ?? "").trim());
+  const exists = normalizedValues.some(
+    (item) => item && item.toLowerCase() === valueText.toLowerCase()
+  );
+
+  if (exists) {
+    return safeValues;
+  }
+
+  return [...safeValues, valueText];
+};
+
 const normalizeType = (type) => {
   const trimmed = String(type ?? "").trim();
   if (!trimmed) throw badRequest("Type key is required");
@@ -191,6 +215,39 @@ const createMaster = async ({ type, label, values }) => {
   return master;
 };
 
+const addCustomValue = async ({ type, value }) => {
+  const cleanType = normalizeType(type);
+  const cleanValue = String(value ?? "").trim();
+
+  if (!cleanValue) {
+    throw badRequest("Value is required");
+  }
+
+  let master = await Master.findOne({ type: cleanType });
+
+  if (!master) {
+    master = await Master.create({
+      type: cleanType,
+      label: cleanType
+        .replace(/([a-z])([A-Z])/g, "$1 $2")
+        .replace(/[_-]+/g, " ")
+        .trim() || cleanType,
+      values: [cleanValue],
+    });
+
+    return master;
+  }
+
+  if (getKind(master.values) !== "list") {
+    throw badRequest(`Master type "${cleanType}" is grouped and cannot accept a custom single value`);
+  }
+
+  master.values = appendUniqueValue(master.values, cleanValue);
+  await master.save();
+
+  return master;
+};
+
 /*
 ==========================================
 Only the label is editable after creation — "type" is the key every
@@ -244,8 +301,10 @@ module.exports = {
   listMasters,
   getMasterById,
   createMaster,
+  addCustomValue,
   updateMasterLabel,
   replaceMasterValues,
   deleteMaster,
   getKind,
+  appendUniqueValue,
 };

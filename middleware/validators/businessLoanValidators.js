@@ -9,7 +9,7 @@ const applyValidator = [
     .isInt({ min: 1 })
     .withMessage("Loan tenure is required and must be a positive number of years"),
   body("employmentType")
-    .isIn(["Self Employed - Business", "Self Employed - Professional"])
+    .isIn(["Salaried", "Self Employed - Business", "Self Employed - Professional"])
     .withMessage("Employment type is invalid"),
   body("fullName").trim().notEmpty().withMessage("Full name is required"),
   body("mobile")

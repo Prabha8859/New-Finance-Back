@@ -5,6 +5,28 @@ const APPLICATION_FIELDS = [
   "loanAmount",
   "loanTenure",
   "employmentType",
+  "businessType",
+  "businessName",
+  "gstNumber",
+  "companyPanNumber",
+  "natureOfBusiness",
+  "industryType",
+  "subIndustry",
+  "profession",
+  "businessEstablishedDate",
+  "transactionBankName",
+  "currentYearTurnover",
+  "priorYearTurnover",
+  "currentYearNetIncome",
+  "previousYearNetIncome",
+  "lastYearTurnover",
+  "last2YearsTurnover",
+  "lastYearNetIncome",
+  "last2YearsNetIncome",
+  "businessState",
+  "businessCity",
+  "businessPincode",
+  "businessPlaceStatus",
   "existingEMI",
   "existingLoanAmount",
   "existingBanks",
@@ -36,6 +58,25 @@ exports.apply = async (req, res, next) => {
     if (!loanData.loanType) {
       loanData.loanType = "Business Loan";
     }
+
+    if (loanData.currentYearTurnover !== undefined && loanData.lastYearTurnover === undefined) {
+      loanData.lastYearTurnover = loanData.currentYearTurnover;
+    }
+    if (loanData.priorYearTurnover !== undefined && loanData.last2YearsTurnover === undefined) {
+      loanData.last2YearsTurnover = loanData.priorYearTurnover;
+    }
+    if (loanData.currentYearNetIncome !== undefined && loanData.lastYearNetIncome === undefined) {
+      loanData.lastYearNetIncome = loanData.currentYearNetIncome;
+    }
+    if (loanData.previousYearNetIncome !== undefined && loanData.last2YearsNetIncome === undefined) {
+      loanData.last2YearsNetIncome = loanData.previousYearNetIncome;
+    }
+
+    ["businessType", "businessName", "gstNumber", "companyPanNumber", "natureOfBusiness", "industryType", "subIndustry", "profession", "transactionBankName", "businessState", "businessCity", "businessPincode", "businessPlaceStatus", "fullName", "mobile", "email", "panNumber", "state", "city", "pincode", "residenceStatus"].forEach((field) => {
+      if (typeof loanData[field] === "string") {
+        loanData[field] = loanData[field].trim();
+      }
+    });
 
     const application = await BusinessLoan.create(loanData);
 

@@ -50,6 +50,21 @@ exports.create = async (req, res, next) => {
   }
 };
 
+exports.addCustomValue = async (req, res, next) => {
+  try {
+    const { type, value } = req.body;
+    const master = await masterService.addCustomValue({ type, value });
+
+    res.status(201).json({
+      success: true,
+      message: "Custom master value added successfully",
+      master,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 /*
 ==========================================
 Update Master Label

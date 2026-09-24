@@ -1,5 +1,6 @@
 const { registerValidator } = require("../middleware/validators/authValidators");
 const { applyValidator } = require("../middleware/validators/personalLoanValidators");
+const { appendUniqueValue } = require("../services/admin/master.service");
 
 /** Runs an express-validator chain (+ the trailing handleValidationErrors) against a fake req. */
 const runChain = (chain, body) => {
@@ -80,5 +81,19 @@ describe("personalLoanValidators.applyValidator", () => {
   it("rejects a non-numeric loan amount", async () => {
     const result = await runChain(applyValidator, { ...validPayload, loanAmount: "abc" });
     expect(result.passed).toBe(false);
+  });
+});
+
+describe("masterService.appendUniqueValue", () => {
+  it("adds a custom value without duplicating case-insensitive matches", () => {
+    const values = ["HDFC Bank", "SBI"];
+    const result = appendUniqueValue(values, "hdfc bank");
+    expect(result).toEqual(["HDFC Bank", "SBI"]);
+  });
+
+  it("appends a new value when it is unique", () => {
+    const values = ["HDFC Bank", "SBI"];
+    const result = appendUniqueValue(values, "Axis Bank");
+    expect(result).toEqual(["HDFC Bank", "SBI", "Axis Bank"]);
   });
 });

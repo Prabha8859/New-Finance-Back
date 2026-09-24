@@ -27,7 +27,116 @@ const businessLoanSchema = new mongoose.Schema(
     employmentType: {
       type: String,
       required: [true, "Employment type is required"],
-      enum: ["Self Employed - Business", "Self Employed - Professional"],
+      enum: ["Salaried", "Self Employed - Business", "Self Employed - Professional"],
+    },
+
+    businessType: {
+      type: String,
+      trim: true,
+    },
+
+    businessName: {
+      type: String,
+      trim: true,
+    },
+
+    gstNumber: {
+      type: String,
+      trim: true,
+    },
+
+    companyPanNumber: {
+      type: String,
+      trim: true,
+    },
+
+    natureOfBusiness: {
+      type: String,
+      trim: true,
+    },
+
+    industryType: {
+      type: String,
+      trim: true,
+    },
+
+    subIndustry: {
+      type: String,
+      trim: true,
+    },
+
+    profession: {
+      type: String,
+      trim: true,
+    },
+
+    businessEstablishedDate: {
+      type: Date,
+    },
+
+    transactionBankName: {
+      type: String,
+      trim: true,
+    },
+
+    currentYearTurnover: {
+      type: Number,
+      default: 0,
+    },
+
+    priorYearTurnover: {
+      type: Number,
+      default: 0,
+    },
+
+    currentYearNetIncome: {
+      type: Number,
+      default: 0,
+    },
+
+    previousYearNetIncome: {
+      type: Number,
+      default: 0,
+    },
+
+    lastYearTurnover: {
+      type: Number,
+      default: 0,
+    },
+
+    last2YearsTurnover: {
+      type: Number,
+      default: 0,
+    },
+
+    lastYearNetIncome: {
+      type: Number,
+      default: 0,
+    },
+
+    last2YearsNetIncome: {
+      type: Number,
+      default: 0,
+    },
+
+    businessState: {
+      type: String,
+      trim: true,
+    },
+
+    businessCity: {
+      type: String,
+      trim: true,
+    },
+
+    businessPincode: {
+      type: String,
+      trim: true,
+    },
+
+    businessPlaceStatus: {
+      type: String,
+      trim: true,
     },
 
     existingEMI: {

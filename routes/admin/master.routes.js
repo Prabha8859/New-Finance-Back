@@ -4,6 +4,7 @@ const masterController = require("../../controllers/admin/master.controller");
 
 router.get("/", masterController.list);
 router.post("/", masterController.create);
+router.post("/custom", masterController.addCustomValue);
 
 router.get("/:id", masterController.getOne);
 router.put("/:id", masterController.updateLabel);
