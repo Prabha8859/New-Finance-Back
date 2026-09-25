@@ -80,39 +80,9 @@ const MASTERS_SEED = [
     values: ["Self Employed - Business", "Self Employed - Professional"],
   },
   {
-    type: "homeEmploymentTypes",
-    label: "Home Loan - Employment Types",
-    values: ["Salaried", "Self Employed - Business", "Self Employed - Professional"],
-  },
-  {
-    type: "loanAgainstPropertyEmploymentTypes",
-    label: "Loan Against Property - Employment Types",
-    values: ["Salaried", "Self Employed - Business", "Self Employed - Professional"],
-  },
-  {
-    type: "workingCapitalEmploymentTypes",
-    label: "Working Capital - Employment Types",
-    values: ["Salaried", "Self Employed - Business", "Self Employed - Professional"],
-  },
-  {
-    type: "leaseRentalEmploymentTypes",
-    label: "Lease Rental Discounting - Employment Types",
-    values: ["Salaried", "Self Employed - Business", "Self Employed - Professional"],
-  },
-  {
-    type: "odCcEmploymentTypes",
-    label: "OD CC Limit - Employment Types",
-    values: ["Salaried", "Self Employed - Business", "Self Employed - Professional"],
-  },
-  {
     type: "odCcLimitAgainstTypes",
     label: "OD CC Limit - Wish To Take Limit Against",
     values: ["Residential Property", "Commercial Property", "Industrial Property", "Unsecured", OTHER_OPTION],
-  },
-  {
-    type: "loanAgainstShareEmploymentTypes",
-    label: "Loan Against Share - Employment Types",
-    values: ["Salaried", "Self Employed - Business", "Self Employed - Professional"],
   },
   {
     type: "buyingPropertyTypes",

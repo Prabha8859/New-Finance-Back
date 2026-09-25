@@ -1,5 +1,32 @@
 const BusinessLoan = require("../models/BusinessLoan");
 
+const SENTINEL_TRANSACTION_BANK_VALUES = new Set(["Other", "Multiple Transaction Banks"]);
+
+const normalizeTransactionBankNames = (selectedBanks, otherBankName) => {
+  const normalized = [];
+
+  const pushUnique = (rawValue) => {
+    if (rawValue === undefined || rawValue === null) return;
+
+    const values = Array.isArray(rawValue) ? rawValue : String(rawValue).split(",");
+
+    values.forEach((item) => {
+      const value = String(item ?? "").trim();
+      if (!value) return;
+      if (SENTINEL_TRANSACTION_BANK_VALUES.has(value)) return;
+
+      const formatted = value.replace(/\s+/g, " ");
+      const alreadyExists = normalized.some((existing) => existing.toLowerCase() === formatted.toLowerCase());
+      if (!alreadyExists) normalized.push(formatted);
+    });
+  };
+
+  pushUnique(selectedBanks);
+  pushUnique(otherBankName);
+
+  return normalized;
+};
+
 const APPLICATION_FIELDS = [
   "loanType",
   "loanAmount",
@@ -30,11 +57,15 @@ const APPLICATION_FIELDS = [
   "businessState",
   "businessCity",
   "businessPincode",
+  "businessPincodeOther",
   "businessPlaceStatus",
+  "businessPlaceStatusOther",
   "existingEMI",
   "existingLoanAmount",
   "existingBanks",
+  "otherBankList",
   "existingLoanTypes",
+  "otherLoanList",
   "fullName",
   "mobile",
   "email",
@@ -76,11 +107,26 @@ exports.apply = async (req, res, next) => {
       loanData.last2YearsNetIncome = loanData.previousYearNetIncome;
     }
 
-    ["businessType", "businessTypeOther", "businessName", "gstNumber", "companyPanNumber", "natureOfBusiness", "natureOfBusinessOther", "industryType", "industryTypeOther", "subIndustry", "profession", "transactionBankName", "transactionBankOther", "businessState", "businessCity", "businessPincode", "businessPlaceStatus", "fullName", "mobile", "email", "panNumber", "state", "city", "pincode", "residenceStatus"].forEach((field) => {
+    ["businessType", "businessTypeOther", "businessName", "gstNumber", "companyPanNumber", "natureOfBusiness", "natureOfBusinessOther", "industryType", "industryTypeOther", "subIndustry", "profession", "transactionBankName", "transactionBankOther", "businessState", "businessCity", "businessPincode", "businessPincodeOther", "businessPlaceStatus", "businessPlaceStatusOther", "fullName", "mobile", "email", "panNumber", "state", "city", "pincode", "residenceStatus"].forEach((field) => {
       if (typeof loanData[field] === "string") {
         loanData[field] = loanData[field].trim();
       }
     });
+
+    ["existingBanks", "otherBankList", "existingLoanTypes", "otherLoanList"].forEach((field) => {
+      if (loanData[field] === undefined) return;
+      if (typeof loanData[field] === "string") {
+        loanData[field] = loanData[field].split(",").map((item) => item.trim()).filter(Boolean);
+      }
+      if (!Array.isArray(loanData[field])) {
+        loanData[field] = [loanData[field]];
+      }
+    });
+
+    loanData.transactionBankName = normalizeTransactionBankNames(
+      loanData.transactionBankName,
+      loanData.transactionBankOther
+    );
 
     if (/^\d{2}\/\d{2}\/\d{4}$/.test(String(loanData.businessEstablishedDate || ""))) {
       const [day, month, year] = loanData.businessEstablishedDate.split("/");
@@ -118,3 +164,5 @@ exports.list = async (req, res, next) => {
     next(error);
   }
 };
+
+module.exports.normalizeTransactionBankNames = normalizeTransactionBankNames;

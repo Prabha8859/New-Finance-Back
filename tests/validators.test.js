@@ -1,5 +1,6 @@
 const { registerValidator } = require("../middleware/validators/authValidators");
 const { applyValidator } = require("../middleware/validators/personalLoanValidators");
+const { normalizeTransactionBankNames } = require("../controllers/businessLoan.controller");
 const { appendUniqueValue } = require("../services/admin/master.service");
 
 /** Runs an express-validator chain (+ the trailing handleValidationErrors) against a fake req. */
@@ -81,6 +82,18 @@ describe("personalLoanValidators.applyValidator", () => {
   it("rejects a non-numeric loan amount", async () => {
     const result = await runChain(applyValidator, { ...validPayload, loanAmount: "abc" });
     expect(result.passed).toBe(false);
+  });
+});
+
+describe("businessLoanController.normalizeTransactionBankNames", () => {
+  it("keeps selected banks and appends a custom other bank name", () => {
+    const result = normalizeTransactionBankNames(["HDFC", "SBI"], "Yes Bank");
+    expect(result).toEqual(["HDFC", "SBI", "Yes Bank"]);
+  });
+
+  it("removes sentinel values and keeps only actual bank names", () => {
+    const result = normalizeTransactionBankNames(["HDFC", "Multiple Transaction Banks"], "Yes Bank");
+    expect(result).toEqual(["HDFC", "Yes Bank"]);
   });
 });
 

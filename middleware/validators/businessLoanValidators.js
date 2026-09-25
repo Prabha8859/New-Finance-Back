@@ -70,12 +70,34 @@ const applyValidator = [
     .if(body("employmentType").equals("Self Employed - Business"))
     .isFloat({ min: 0 })
     .withMessage("Last year net income is required"),
-  body("transactionBankName").optional().trim(),
+  body("transactionBankName")
+    .optional()
+    .custom((value) => {
+      if (value === undefined || value === null || value === "") return true;
+
+      const values = Array.isArray(value) ? value : [value];
+      const invalidValue = values.some((item) => typeof item !== "string" || !String(item).trim());
+
+      if (invalidValue) {
+        throw new Error("Transaction bank name must be a string or an array of strings");
+      }
+
+      return true;
+    }),
   body("transactionBankOther")
-    .if(body("transactionBankName").equals("Other"))
+    .optional()
     .trim()
-    .notEmpty()
-    .withMessage("Please mention transaction bank name"),
+    .custom((value, { req }) => {
+      const selected = req.body.transactionBankName;
+      const list = Array.isArray(selected) ? selected : selected ? [selected] : [];
+      const shouldRequireCustomBank = list.some((item) => ["Other", "Multiple Transaction Banks"].includes(String(item).trim()));
+
+      if (shouldRequireCustomBank && (!value || !String(value).trim())) {
+        throw new Error("Please mention transaction bank name");
+      }
+
+      return true;
+    }),
   body("profession")
     .if(body("employmentType").equals("Self Employed - Professional"))
     .trim()
@@ -101,12 +123,24 @@ const applyValidator = [
   body("businessCity").trim().notEmpty().withMessage("Business city is required"),
   body("businessPincode")
     .trim()
-    .matches(/^\d{6}$/)
-    .withMessage("Enter a valid 6-digit business pincode"),
+    .custom((value) => {
+      if (value === "Other" || /^\d{6}$/.test(value)) return true;
+      throw new Error("Enter a valid 6-digit business pincode");
+    }),
+  body("businessPincodeOther")
+    .if(body("businessPincode").equals("Other"))
+    .trim()
+    .notEmpty()
+    .withMessage("Please mention business pincode"),
   body("businessPlaceStatus")
     .trim()
     .notEmpty()
     .withMessage("Business place status is required"),
+  body("businessPlaceStatusOther")
+    .if(body("businessPlaceStatus").equals("Other"))
+    .trim()
+    .notEmpty()
+    .withMessage("Please mention business place status"),
   body("fullName").trim().notEmpty().withMessage("Full name is required"),
   body("mobile")
     .trim()

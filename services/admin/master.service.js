@@ -174,9 +174,7 @@ const getCitiesByState = async (state) => {
   const cleanState = normalizeTextValue(state, "State");
   const master = await Master.findOne({ type: "citiesByState" });
   if (!master) return [];
-  if (!isPlainObject(master.values)) {
-    throw badRequest('Master "citiesByState" must contain grouped values');
-  }
+  if (!isPlainObject(master.values)) return [];
 
   const actualState = Object.keys(master.values).find(
     (key) => key.toLowerCase() === cleanState.toLowerCase()
@@ -197,21 +195,21 @@ const addState = async (state) => {
     states = await Master.create({ type: "states", label: "Indian States", values: [cleanState] });
   } else {
     const values = normalizeList(states.values, "States");
-    if (values.some((item) => item.toLowerCase() === cleanState.toLowerCase())) {
-      throw badRequest(`State "${cleanState}" already exists`);
+    const exists = values.some((item) => item.toLowerCase() === cleanState.toLowerCase());
+    if (!exists) {
+      states.values = [...values, cleanState].sort();
+      states.markModified("values");
+      await states.save();
     }
-    states.values = [...values, cleanState].sort();
-    states.markModified("values");
-    await states.save();
   }
 
   let cities = await Master.findOne({ type: "citiesByState" });
   if (!cities) {
     await Master.create({ type: "citiesByState", label: "Cities by State", values: { [cleanState]: [] } });
   } else {
-    if (!isPlainObject(cities.values)) throw badRequest('Master "citiesByState" must contain grouped values');
-    if (!Object.prototype.hasOwnProperty.call(cities.values, cleanState)) {
-      cities.values = { ...cities.values, [cleanState]: [] };
+    const groupedValues = isPlainObject(cities.values) ? cities.values : {};
+    if (!Object.prototype.hasOwnProperty.call(groupedValues, cleanState)) {
+      cities.values = { ...groupedValues, [cleanState]: [] };
       cities.markModified("values");
       await cities.save();
     }
@@ -288,13 +286,12 @@ const addCity = async (state, city) => {
   if (!actualState) throw notFound(`State "${cleanState}" not found`);
 
   const values = normalizeList(citiesMaster.values[actualState], `Cities of ${actualState}`);
-  if (values.some((item) => item.toLowerCase() === cleanCity.toLowerCase())) {
-    throw badRequest(`City "${cleanCity}" already exists in ${actualState}`);
+  const exists = values.some((item) => item.toLowerCase() === cleanCity.toLowerCase());
+  if (!exists) {
+    citiesMaster.values = { ...citiesMaster.values, [actualState]: [...values, cleanCity].sort() };
+    citiesMaster.markModified("values");
+    await citiesMaster.save();
   }
-
-  citiesMaster.values = { ...citiesMaster.values, [actualState]: [...values, cleanCity].sort() };
-  citiesMaster.markModified("values");
-  await citiesMaster.save();
   return cleanCity;
 };
 

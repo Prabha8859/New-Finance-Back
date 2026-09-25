@@ -1,5 +1,10 @@
 const mongoose = require("mongoose");
 const { EMPLOYMENT_TYPES } = require("../constants/employmentTypes");
+const {
+  personalDetailsFields,
+  existingLoanExposureFields,
+  requiredSalariedIncomeFields,
+} = require("./schemas/loanSections");
 
 const personalLoanSchema = new mongoose.Schema(
   {
@@ -30,43 +35,9 @@ const personalLoanSchema = new mongoose.Schema(
       default: "Salaried",
     },
 
-    companyName: String,
-    companyType: String,
-    companyTypeOther: String,
-    monthlySalary: Number,
-    salaryReceivedAs: String,
-    salaryReceivedAsOther: String,
-    salaryBankName: String,
-    salaryBankOther: String,
-
-    existingEMI: {
-      type: Number,
-      default: 0,
-    },
-    existingLoanAmount: {
-      type: Number,
-      default: 0,
-    },
-    existingBanks: [String],
-    otherBankList: [String],
-    existingLoanTypes: [String],
-    otherLoanList: [String],
-
-    fullName: {
-      type: String,
-      required: [true, "Full name is required"],
-    },
-    mobile: {
-      type: String,
-      required: [true, "Mobile number is required"],
-    },
-    email: String,
-    dob: Date,
-    panNumber: String,
-    state: String,
-    city: String,
-    pincode: String,
-    residenceStatus: String,
+    ...requiredSalariedIncomeFields,
+    ...existingLoanExposureFields,
+    ...personalDetailsFields,
     status: {
       type: String,
       enum: ["Pending", "Approved", "Rejected", "Submitted"],

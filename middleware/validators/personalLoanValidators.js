@@ -30,8 +30,8 @@ const applyValidator = [
     .optional()
     .isIn(EMPLOYMENT_TYPES.personal)
     .withMessage("Employment type must be Salaried"),
-  body("companyName").optional().trim().notEmpty().withMessage("Company name is required"),
-  body("companyType").optional().trim().notEmpty().withMessage("Company type is required"),
+  body("companyName").if(body("employmentType").equals("Salaried")).trim().notEmpty().withMessage("Company name is required"),
+  body("companyType").if(body("employmentType").equals("Salaried")).trim().notEmpty().withMessage("Company type is required"),
   body("companyTypeOther")
     .optional()
     .trim()
@@ -39,11 +39,11 @@ const applyValidator = [
     .notEmpty()
     .withMessage("Please mention company type"),
   body("monthlySalary")
-    .optional()
+    .if(body("employmentType").equals("Salaried"))
     .isFloat({ min: 0 })
     .withMessage("Monthly salary must be a non-negative number"),
   body("salaryReceivedAs")
-    .optional()
+    .if(body("employmentType").equals("Salaried"))
     .trim()
     .notEmpty()
     .withMessage("Salary received as is required"),
@@ -54,7 +54,7 @@ const applyValidator = [
     .notEmpty()
     .withMessage("Please mention salary received as"),
   body("salaryBankName")
-    .optional()
+    .if(body("employmentType").equals("Salaried"))
     .trim()
     .notEmpty()
     .withMessage("Select salary bank name"),
