@@ -68,21 +68,50 @@ const applyValidator = [
     .custom((value) => {
       if (value === undefined || value === null || value === "") return true;
 
-      const values = Array.isArray(value) ? value : [value];
-      const invalidValue = values.some((item) => typeof item !== "string" || !String(item).trim());
-
-      if (invalidValue) {
-        throw new Error("Transaction bank name must be a string or an array of strings");
+      if (typeof value === "string") {
+        if (!value.trim()) throw new Error("Transaction bank name cannot be empty");
+        return true;
       }
 
-      return true;
+      if (Array.isArray(value)) {
+        const invalidValue = value.some((item) => typeof item !== "string" || !String(item).trim());
+        if (invalidValue) {
+          throw new Error("Transaction bank name must be a string or an array of strings");
+        }
+        return true;
+      }
+
+      if (value && typeof value === "object") {
+        if (typeof value.displayName !== "string" || !String(value.displayName).trim()) {
+          throw new Error("Transaction bank display name is required");
+        }
+
+        if (!Array.isArray(value.banks) || value.banks.length === 0) {
+          throw new Error("Transaction bank list is required");
+        }
+
+        const invalidBank = value.banks.some((item) => typeof item !== "string" || !String(item).trim());
+        if (invalidBank) {
+          throw new Error("Transaction bank list must contain only valid bank names");
+        }
+
+        return true;
+      }
+
+      throw new Error("Transaction bank name must be a string, array of strings, or bank object");
     }),
   body("transactionBankOther")
     .optional()
     .trim()
     .custom((value, { req }) => {
       const selected = req.body.transactionBankName;
-      const list = Array.isArray(selected) ? selected : selected ? [selected] : [];
+      const list = Array.isArray(selected)
+        ? selected
+        : selected && typeof selected === "object" && Array.isArray(selected.banks)
+          ? selected.banks
+          : selected
+            ? [selected]
+            : [];
       const shouldRequireCustomBank = list.some((item) => ["Other", "Multiple Transaction Banks"].includes(String(item).trim()));
 
       if (shouldRequireCustomBank && (!value || !String(value).trim())) {
@@ -98,20 +127,38 @@ const applyValidator = [
   body("previousYearNetIncome").if(body("employmentType").equals("Self Employed - Professional")).isFloat({ min: 0 }),
   body("lastYearTurnover").if(body("employmentType").equals("Self Employed - Business")).isFloat({ min: 0 }),
   body("lastYearNetIncome").if(body("employmentType").equals("Self Employed - Business")).isFloat({ min: 0 }),
-  body("businessState").if(body("employmentType").not().equals("Salaried")).trim().notEmpty(),
-  body("businessCity").if(body("employmentType").not().equals("Salaried")).trim().notEmpty(),
+  body("businessState")
+    .if(body("employmentType").isIn(["Self Employed - Business", "Self Employed - Professional"]))
+    .trim()
+    .notEmpty()
+    .withMessage("Business state is required"),
+  body("businessCity")
+    .if(body("employmentType").isIn(["Self Employed - Business", "Self Employed - Professional"]))
+    .trim()
+    .notEmpty()
+    .withMessage("Business city is required"),
   body("businessPincode")
-    .if(body("employmentType").not().equals("Salaried"))
+    .if(body("employmentType").isIn(["Self Employed - Business", "Self Employed - Professional"]))
     .trim()
     .custom((value) => {
       if (value === "Other" || /^\d{6}$/.test(value)) return true;
       throw new Error("Enter a valid business pincode");
     }),
   body("businessPincodeOther").if(body("businessPincode").equals("Other")).trim().notEmpty(),
-  body("businessPlaceStatus").if(body("employmentType").not().equals("Salaried")).trim().notEmpty(),
+  body("businessPlaceStatus")
+    .if(body("employmentType").isIn(["Self Employed - Business", "Self Employed - Professional"]))
+    .trim()
+    .notEmpty()
+    .withMessage("Business place status is required"),
   body("businessPlaceStatusOther").if(body("businessPlaceStatus").equals("Other")).trim().notEmpty(),
-  body("existingEMI").isFloat({ min: 0 }).withMessage("Existing EMI is required"),
-  body("existingLoanAmount").isFloat({ min: 0 }).withMessage("Existing loan amount is required"),
+  body("existingEMI")
+    .optional({ nullable: true })
+    .isFloat({ min: 0 })
+    .withMessage("Existing EMI is required"),
+  body("existingLoanAmount")
+    .optional({ nullable: true })
+    .isFloat({ min: 0 })
+    .withMessage("Existing loan amount is required"),
   body("fullName").trim().notEmpty().withMessage("Full name is required"),
   body("mobile").trim().matches(/^\d{10}$/).withMessage("Enter a valid mobile number"),
   body("email").trim().isEmail().withMessage("Enter a valid email"),

@@ -3,7 +3,7 @@ const HomeLoan = require("../models/HomeLoan");
 const SENTINEL_TRANSACTION_BANK_VALUES = new Set(["Other", "Multiple Transaction Banks"]);
 
 const normalizeTransactionBankNames = (selectedBanks, otherBankName) => {
-  const normalized = [];
+  const banks = [];
 
   const pushUnique = (rawValue) => {
     if (rawValue === undefined || rawValue === null) return;
@@ -16,15 +16,20 @@ const normalizeTransactionBankNames = (selectedBanks, otherBankName) => {
       if (SENTINEL_TRANSACTION_BANK_VALUES.has(value)) return;
 
       const formatted = value.replace(/\s+/g, " ");
-      const alreadyExists = normalized.some((existing) => existing.toLowerCase() === formatted.toLowerCase());
-      if (!alreadyExists) normalized.push(formatted);
+      const alreadyExists = banks.some((existing) => existing.toLowerCase() === formatted.toLowerCase());
+      if (!alreadyExists) banks.push(formatted);
     });
   };
 
   pushUnique(selectedBanks);
-  pushUnique(otherBankName);
+  if (otherBankName !== undefined && otherBankName !== null && String(otherBankName).trim()) {
+    pushUnique(otherBankName);
+  }
 
-  return normalized;
+  return {
+    displayName: banks.length > 1 ? "Multiple Transaction Banks" : banks.length === 1 ? banks[0] : undefined,
+    banks,
+  };
 };
 
 const COMMON_FIELDS = [
@@ -56,6 +61,13 @@ const PROFESSIONAL_FIELDS = [
   "businessPincodeOther", "businessPlaceStatus", "businessPlaceStatusOther",
 ];
 
+const BUSINESS_ONLY_FIELDS = [
+  "businessType", "businessTypeOther", "businessName", "gstNumber", "companyPanNumber",
+  "natureOfBusiness", "natureOfBusinessOther", "industryType", "industryTypeOther",
+  "subIndustry", "businessEstablishedDate", "transactionBankName", "transactionBankOther",
+  "lastYearTurnover", "last2YearsTurnover", "lastYearNetIncome", "last2YearsNetIncome",
+];
+
 const FIELDS = [
   ...COMMON_FIELDS,
   ...SALARIED_FIELDS,
@@ -65,15 +77,17 @@ const FIELDS = [
 
 const sanitizeEmploymentFields = (data) => {
   if (!data || typeof data !== "object") return data;
-  const employmentType = String(data.employmentType || "");
+  const employmentType = String(data.employmentType || "").trim();
   const allowed = new Set(COMMON_FIELDS);
 
   if (employmentType === "Salaried") {
     SALARIED_FIELDS.forEach((field) => allowed.add(field));
   } else if (employmentType === "Self Employed - Business") {
     BUSINESS_FIELDS.forEach((field) => allowed.add(field));
+    PROFESSIONAL_FIELDS.forEach((field) => allowed.delete(field));
   } else if (employmentType === "Self Employed - Professional") {
     PROFESSIONAL_FIELDS.forEach((field) => allowed.add(field));
+    BUSINESS_ONLY_FIELDS.forEach((field) => allowed.delete(field));
   }
 
   Object.keys(data).forEach((key) => {
@@ -99,11 +113,24 @@ exports.apply = async (req, res, next) => {
       data.businessEstablishedDate = `${year}-${month}-${day}`;
     }
 
+    if (data.employmentType === "Self Employed - Business") {
+      PROFESSIONAL_FIELDS.forEach((field) => {
+        delete data[field];
+      });
+    }
+
+    if (data.employmentType === "Self Employed - Professional") {
+      BUSINESS_ONLY_FIELDS.forEach((field) => {
+        delete data[field];
+      });
+    }
+
     data.transactionBankName = normalizeTransactionBankNames(
       data.transactionBankName,
       data.transactionBankOther
     );
 
+    delete data.transactionBankDisplayName;
     sanitizeEmploymentFields(data);
     const application = await HomeLoan.create(data);
     res.status(201).json({ success: true, data: normalizeResponse(application) });

@@ -1,6 +1,7 @@
 const PersonalLoan = require("../../models/PersonalLoan");
 const BusinessLoan = require("../../models/BusinessLoan");
 const HomeLoan = require("../../models/HomeLoan");
+const { sanitizeBusinessLoanResponse } = require("../businessLoan.controller");
 
 exports.listHomeLoans = async (req, res, next) => {
   try {
@@ -56,9 +57,13 @@ exports.getPersonalLoanById = async (req, res, next) => {
 exports.listBusinessLoans = async (req, res, next) => {
   try {
     const applications = await BusinessLoan.find().sort({ createdAt: -1 });
+    const sanitized = applications.map((application) => sanitizeBusinessLoanResponse(
+      application && typeof application.toObject === "function" ? application.toObject() : application
+    ));
+
     res.status(200).json({
       success: true,
-      data: applications,
+      data: sanitized,
     });
   } catch (error) {
     next(error);
@@ -76,9 +81,13 @@ exports.getBusinessLoanById = async (req, res, next) => {
       });
     }
 
+    const sanitized = sanitizeBusinessLoanResponse(
+      application && typeof application.toObject === "function" ? application.toObject() : application
+    );
+
     res.status(200).json({
       success: true,
-      data: application,
+      data: sanitized,
     });
   } catch (error) {
     next(error);

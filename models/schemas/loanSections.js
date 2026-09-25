@@ -1,6 +1,10 @@
 const mongoose = require("mongoose");
 const { requiredFor } = require("../../utils/employmentTypeRules");
 
+const requiredForSelfEmployed = function () {
+  return ["Self Employed - Business", "Self Employed - Professional"].includes(this.employmentType);
+};
+
 const personalDetailsFields = {
   fullName: { type: String, required: [true, "Full name is required"] },
   mobile: { type: String, required: [true, "Mobile number is required"] },
@@ -95,6 +99,7 @@ const businessIncomeFields = {
   },
   transactionBankName: { type: mongoose.Schema.Types.Mixed, default: [] },
   transactionBankOther: { type: String, trim: true },
+  transactionBankDisplayName: { type: String, trim: true },
   currentYearTurnover: {
     type: Number,
     default: 0,
@@ -127,11 +132,27 @@ const businessIncomeFields = {
     required: requiredFor("Self Employed - Business"),
   },
   last2YearsNetIncome: { type: Number, default: 0 },
-  businessState: { type: String, trim: true, required: true },
-  businessCity: { type: String, trim: true, required: true },
-  businessPincode: { type: String, trim: true, required: true },
+  businessState: {
+    type: String,
+    trim: true,
+    required: requiredForSelfEmployed,
+  },
+  businessCity: {
+    type: String,
+    trim: true,
+    required: requiredForSelfEmployed,
+  },
+  businessPincode: {
+    type: String,
+    trim: true,
+    required: requiredForSelfEmployed,
+  },
   businessPincodeOther: { type: String, trim: true },
-  businessPlaceStatus: { type: String, trim: true, required: true },
+  businessPlaceStatus: {
+    type: String,
+    trim: true,
+    required: requiredForSelfEmployed,
+  },
   businessPlaceStatusOther: { type: String, trim: true },
 };
 
@@ -200,30 +221,22 @@ const homeIncomeFields = {
   businessState: {
     type: String,
     trim: true,
-    required: function () {
-      return this.employmentType !== "Salaried";
-    },
+    required: requiredForSelfEmployed,
   },
   businessCity: {
     type: String,
     trim: true,
-    required: function () {
-      return this.employmentType !== "Salaried";
-    },
+    required: requiredForSelfEmployed,
   },
   businessPincode: {
     type: String,
     trim: true,
-    required: function () {
-      return this.employmentType !== "Salaried";
-    },
+    required: requiredForSelfEmployed,
   },
   businessPlaceStatus: {
     type: String,
     trim: true,
-    required: function () {
-      return this.employmentType !== "Salaried";
-    },
+    required: requiredForSelfEmployed,
   },
 };
 
