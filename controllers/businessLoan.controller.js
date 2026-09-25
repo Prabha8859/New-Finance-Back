@@ -6,15 +6,19 @@ const APPLICATION_FIELDS = [
   "loanTenure",
   "employmentType",
   "businessType",
+  "businessTypeOther",
   "businessName",
   "gstNumber",
   "companyPanNumber",
   "natureOfBusiness",
+  "natureOfBusinessOther",
   "industryType",
+  "industryTypeOther",
   "subIndustry",
   "profession",
   "businessEstablishedDate",
   "transactionBankName",
+  "transactionBankOther",
   "currentYearTurnover",
   "priorYearTurnover",
   "currentYearNetIncome",
@@ -72,11 +76,16 @@ exports.apply = async (req, res, next) => {
       loanData.last2YearsNetIncome = loanData.previousYearNetIncome;
     }
 
-    ["businessType", "businessName", "gstNumber", "companyPanNumber", "natureOfBusiness", "industryType", "subIndustry", "profession", "transactionBankName", "businessState", "businessCity", "businessPincode", "businessPlaceStatus", "fullName", "mobile", "email", "panNumber", "state", "city", "pincode", "residenceStatus"].forEach((field) => {
+    ["businessType", "businessTypeOther", "businessName", "gstNumber", "companyPanNumber", "natureOfBusiness", "natureOfBusinessOther", "industryType", "industryTypeOther", "subIndustry", "profession", "transactionBankName", "transactionBankOther", "businessState", "businessCity", "businessPincode", "businessPlaceStatus", "fullName", "mobile", "email", "panNumber", "state", "city", "pincode", "residenceStatus"].forEach((field) => {
       if (typeof loanData[field] === "string") {
         loanData[field] = loanData[field].trim();
       }
     });
+
+    if (/^\d{2}\/\d{2}\/\d{4}$/.test(String(loanData.businessEstablishedDate || ""))) {
+      const [day, month, year] = loanData.businessEstablishedDate.split("/");
+      loanData.businessEstablishedDate = `${year}-${month}-${day}`;
+    }
 
     const application = await BusinessLoan.create(loanData);
 

@@ -1,56 +1,12 @@
 require("dotenv").config();
 
 const mongoose = require("mongoose");
-const { State, City } = require("country-state-city");
 const connectDB = require("../config/db");
 const Master = require("../models/Master");
 
 const OTHER_OPTION = "Other";
 
-const indiaStates = State.getStatesOfCountry("IN");
-const STATE_NAMES = indiaStates.map((s) => s.name).sort();
-
-const cleanCityName = (raw) => raw.trim().replace(/[,.;:]+$/, "").replace(/\s{2,}/g, " ").trim();
-
-const dedupeCities = (names) => {
-  const seen = new Map();
-  for (const raw of names) {
-    const cleaned = cleanCityName(raw);
-    if (!cleaned) continue;
-    const key = cleaned.toLowerCase();
-    const existing = seen.get(key);
-    if (!existing || raw.length < existing.rawLength) {
-      seen.set(key, { name: cleaned, rawLength: raw.length });
-    }
-  }
-  return [...seen.values()].map((v) => v.name).sort();
-};
-
-const CITIES_BY_STATE = {};
-for (const state of indiaStates) {
-  const rawCities = City.getCitiesOfState("IN", state.isoCode).map((c) => c.name);
-  CITIES_BY_STATE[state.name] = dedupeCities(rawCities);
-}
-
 const MASTERS_SEED = [
-  {
-    type: "states",
-    label: "Indian States",
-    values: STATE_NAMES,
-  },
-  {
-    type: "citiesByState",
-    label: "Cities by State",
-    values: CITIES_BY_STATE,
-  },
-  {
-    type: "banks",
-    label: "Banks",
-    values: [
-      "HDFC", "SBI", "Bank Of India", "ICICI", "Punjab National Bank",
-      "Kotak Mahindra Bank", "AXIS", "Citibank", OTHER_OPTION,
-    ],
-  },
   {
     type: "existingLoanTypes",
     label: "Existing Loan Types",

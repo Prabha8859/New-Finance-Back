@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { EMPLOYMENT_TYPES } = require("../constants/employmentTypes");
 
 const businessLoanSchema = new mongoose.Schema(
   {
@@ -27,10 +28,18 @@ const businessLoanSchema = new mongoose.Schema(
     employmentType: {
       type: String,
       required: [true, "Employment type is required"],
-      enum: ["Salaried", "Self Employed - Business", "Self Employed - Professional"],
+      enum: EMPLOYMENT_TYPES.business,
     },
 
     businessType: {
+      type: String,
+      trim: true,
+      required: function () {
+        return this.employmentType === "Self Employed - Business";
+      },
+    },
+
+    businessTypeOther: {
       type: String,
       trim: true,
     },
@@ -38,6 +47,9 @@ const businessLoanSchema = new mongoose.Schema(
     businessName: {
       type: String,
       trim: true,
+      required: function () {
+        return this.employmentType === "Self Employed - Business";
+      },
     },
 
     gstNumber: {
@@ -48,14 +60,33 @@ const businessLoanSchema = new mongoose.Schema(
     companyPanNumber: {
       type: String,
       trim: true,
+      required: function () {
+        return this.employmentType === "Self Employed - Business";
+      },
     },
 
     natureOfBusiness: {
       type: String,
       trim: true,
+      required: function () {
+        return this.employmentType === "Self Employed - Business";
+      },
+    },
+
+    natureOfBusinessOther: {
+      type: String,
+      trim: true,
     },
 
     industryType: {
+      type: String,
+      trim: true,
+      required: function () {
+        return this.employmentType === "Self Employed - Business";
+      },
+    },
+
+    industryTypeOther: {
       type: String,
       trim: true,
     },
@@ -68,10 +99,16 @@ const businessLoanSchema = new mongoose.Schema(
     profession: {
       type: String,
       trim: true,
+      required: function () {
+        return this.employmentType === "Self Employed - Professional";
+      },
     },
 
     businessEstablishedDate: {
       type: Date,
+      required: function () {
+        return this.employmentType === "Self Employed - Business";
+      },
     },
 
     transactionBankName: {
@@ -79,29 +116,49 @@ const businessLoanSchema = new mongoose.Schema(
       trim: true,
     },
 
+    transactionBankOther: {
+      type: String,
+      trim: true,
+    },
+
     currentYearTurnover: {
       type: Number,
       default: 0,
+      required: function () {
+        return this.employmentType === "Self Employed - Professional";
+      },
     },
 
     priorYearTurnover: {
       type: Number,
       default: 0,
+      required: function () {
+        return this.employmentType === "Self Employed - Professional";
+      },
     },
 
     currentYearNetIncome: {
       type: Number,
       default: 0,
+      required: function () {
+        return this.employmentType === "Self Employed - Professional";
+      },
     },
 
     previousYearNetIncome: {
       type: Number,
       default: 0,
+      required: function () {
+        return this.employmentType === "Self Employed - Professional";
+      },
     },
 
     lastYearTurnover: {
       type: Number,
       default: 0,
+      required: function () {
+        return this.employmentType === "Self Employed - Business";
+      },
     },
 
     last2YearsTurnover: {
@@ -112,6 +169,9 @@ const businessLoanSchema = new mongoose.Schema(
     lastYearNetIncome: {
       type: Number,
       default: 0,
+      required: function () {
+        return this.employmentType === "Self Employed - Business";
+      },
     },
 
     last2YearsNetIncome: {
@@ -122,21 +182,25 @@ const businessLoanSchema = new mongoose.Schema(
     businessState: {
       type: String,
       trim: true,
+      required: true,
     },
 
     businessCity: {
       type: String,
       trim: true,
+      required: true,
     },
 
     businessPincode: {
       type: String,
       trim: true,
+      required: true,
     },
 
     businessPlaceStatus: {
       type: String,
       trim: true,
+      required: true,
     },
 
     existingEMI: {

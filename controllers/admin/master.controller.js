@@ -15,6 +15,88 @@ exports.list = async (req, res, next) => {
   }
 };
 
+exports.getStates = async (req, res, next) => {
+  try {
+    const states = await masterService.getStates();
+    res.json({ success: true, data: states });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.getCities = async (req, res, next) => {
+  try {
+    const cities = await masterService.getCitiesByState(req.params.state || req.query.state);
+    res.json({ success: true, data: cities });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.addState = async (req, res, next) => {
+  try {
+    const input = Array.isArray(req.body.values) ? req.body.values : [req.body.state ?? req.body.value];
+    const states = [];
+    for (const state of input) states.push(await masterService.addState(state));
+    res.status(201).json({ success: true, message: "States added successfully", data: { states } });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.updateState = async (req, res, next) => {
+  try {
+    const state = await masterService.updateState(req.params.state, req.body.state ?? req.body.value);
+    res.json({ success: true, message: "State updated successfully", data: { state } });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.deleteState = async (req, res, next) => {
+  try {
+    await masterService.deleteState(req.params.state);
+    res.json({ success: true, message: "State deleted successfully" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.addCity = async (req, res, next) => {
+  try {
+    const input = Array.isArray(req.body.values)
+      ? req.body.values
+      : [req.body.city ?? req.body.value];
+    const cities = [];
+    for (const city of input) cities.push(await masterService.addCity(req.params.state, city));
+    res.status(201).json({ success: true, message: "Cities added successfully", data: { cities } });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.updateCity = async (req, res, next) => {
+  try {
+    const city = await masterService.updateCity(
+      req.params.state,
+      req.params.city,
+      req.body.city ?? req.body.value
+    );
+    res.json({ success: true, message: "City updated successfully", data: { city } });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.deleteCity = async (req, res, next) => {
+  try {
+    await masterService.deleteCity(req.params.state, req.params.city);
+    res.json({ success: true, message: "City deleted successfully" });
+  } catch (error) {
+    next(error);
+  }
+};
+
 /*
 ==========================================
 Get One Master

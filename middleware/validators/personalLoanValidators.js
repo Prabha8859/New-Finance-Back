@@ -1,5 +1,6 @@
 const { body } = require("express-validator");
 const handleValidationErrors = require("./handleValidationErrors");
+const { EMPLOYMENT_TYPES } = require("../../constants/employmentTypes");
 
 const applyValidator = [
   body("loanAmount")
@@ -27,7 +28,7 @@ const applyValidator = [
     .withMessage("Enter a valid 6-digit pincode"),
   body("employmentType")
     .optional()
-    .isIn(["Salaried"])
+    .isIn(EMPLOYMENT_TYPES.personal)
     .withMessage("Employment type must be Salaried"),
   body("companyName").optional().trim().notEmpty().withMessage("Company name is required"),
   body("companyType").optional().trim().notEmpty().withMessage("Company type is required"),

@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { EMPLOYMENT_TYPES } = require("../constants/employmentTypes");
 
 const personalLoanSchema = new mongoose.Schema(
   {
@@ -25,7 +26,7 @@ const personalLoanSchema = new mongoose.Schema(
 
     employmentType: {
       type: String,
-      enum: ["Salaried"],
+      enum: EMPLOYMENT_TYPES.personal,
       default: "Salaried",
     },
 

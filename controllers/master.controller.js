@@ -1,4 +1,46 @@
 const Master = require("../models/Master");
+const adminMasterService = require("../services/admin/master.service");
+const { EMPLOYMENT_TYPES } = require("../constants/employmentTypes");
+
+exports.getEmploymentTypes = async (req, res, next) => {
+  try {
+    const loanType = String(req.query.loanType ?? "").trim().toLowerCase();
+    const types = loanType === "personal"
+      ? EMPLOYMENT_TYPES.personal
+      : loanType === "business"
+      ? EMPLOYMENT_TYPES.business
+      : null;
+
+    if (!types) {
+      return res.status(400).json({
+        success: false,
+        message: "loanType must be personal or business",
+      });
+    }
+
+    res.json({ success: true, data: types });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.getStates = async (req, res, next) => {
+  try {
+    const states = await adminMasterService.getStates();
+    res.json({ success: true, data: states });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.getCities = async (req, res, next) => {
+  try {
+    const cities = await adminMasterService.getCitiesByState(req.query.state);
+    res.json({ success: true, data: cities });
+  } catch (error) {
+    next(error);
+  }
+};
 
 exports.getAllMasters = async (req, res, next) => {
   try {

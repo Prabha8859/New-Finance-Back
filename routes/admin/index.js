@@ -12,6 +12,8 @@ and kept isolated from the public/user-facing API.
 
 router.use("/auth", require("./adminAuth.routes"));
 
+router.use("/", adminAuth, require("./application.routes"));
+
 router.use("/masters", adminAuth, require("./master.routes"));
 
 router.use("/customers", adminAuth, require("./customer.routes"));
