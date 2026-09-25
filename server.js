@@ -55,6 +55,7 @@ app.use("/api/auth", require("./routes/auth.routes"));
 app.use("/api/personal-loan", require("./routes/personalLoan.routes"));
 app.use("/api/business-loan", require("./routes/businessLoan.routes"));
 app.use("/api/home-loan", require("./routes/homeLoan.routes"));
+app.use("/api/loan-against-property", require("./routes/loanAgainstProperty.routes"));
 
 app.use("/api/masters", require("./routes/master.routes"));
 app.use("/api/employment-types", require("./routes/employmentType.routes"));

@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const { requiredFor } = require("../../utils/employmentTypeRules");
+const { requiredFor, requiredForSalaryBank } = require("../../utils/employmentTypeRules");
 
 const requiredForSelfEmployed = function () {
   return ["Self Employed - Business", "Self Employed - Professional"].includes(this.employmentType);
@@ -54,7 +54,7 @@ const requiredSalariedIncomeFields = {
   companyType: { type: String, required: requiredFor("Salaried") },
   monthlySalary: { type: Number, required: requiredFor("Salaried") },
   salaryReceivedAs: { type: String, required: requiredFor("Salaried") },
-  salaryBankName: { type: String, required: requiredFor("Salaried") },
+  salaryBankName: { type: String, required: requiredForSalaryBank },
 };
 
 const businessIncomeFields = {
@@ -156,14 +156,49 @@ const businessIncomeFields = {
   businessPlaceStatusOther: { type: String, trim: true },
 };
 
-const homeIncomeFields = {
+/** Collateral / mortgaged property details (Loan Against Property). */
+const collateralPropertyFields = {
+  collateralPropertyType: {
+    type: String,
+    trim: true,
+    required: [true, "Please select what you wish to take the loan against"],
+  },
+  collateralPropertyTypeOther: { type: String, trim: true },
+  collateralPropertyMarketValue: {
+    type: Number,
+    required: [true, "Collateral property market value is required"],
+  },
+  collateralPropertyAge: {
+    type: Number,
+    required: [true, "Collateral property age is required"],
+  },
+  collateralPropertyState: {
+    type: String,
+    trim: true,
+    required: [true, "Collateral property state is required"],
+  },
+  collateralPropertyCity: {
+    type: String,
+    trim: true,
+    required: [true, "Collateral property city is required"],
+  },
+  collateralPropertyPincode: {
+    type: String,
+    trim: true,
+    required: [true, "Collateral property pincode is required"],
+  },
+  collateralPropertyPincodeOther: { type: String, trim: true },
+};
+
+/** Income fields shared by every product that supports all employment types. */
+const employmentIncomeFields = {
   ...salariedIncomeFields,
   ...businessIncomeFields,
   companyName: { type: String, required: requiredFor("Salaried") },
   companyType: { type: String, required: requiredFor("Salaried") },
   monthlySalary: { type: Number, required: requiredFor("Salaried") },
   salaryReceivedAs: { type: String, required: requiredFor("Salaried") },
-  salaryBankName: { type: String, required: requiredFor("Salaried") },
+  salaryBankName: { type: String, required: requiredForSalaryBank },
   currentYearTurnover: {
     type: Number,
     default: function () {
@@ -247,5 +282,6 @@ module.exports = {
   salariedIncomeFields,
   requiredSalariedIncomeFields,
   businessIncomeFields,
-  homeIncomeFields,
+  collateralPropertyFields,
+  employmentIncomeFields,
 };

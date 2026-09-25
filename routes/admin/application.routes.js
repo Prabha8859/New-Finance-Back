@@ -11,4 +11,7 @@ router.get("/business-loans/:id", applicationController.getBusinessLoanById);
 router.get("/home-loans", applicationController.listHomeLoans);
 router.get("/home-loans/:id", applicationController.getHomeLoanById);
 
+router.get("/loan-against-properties", applicationController.listLoanAgainstProperties);
+router.get("/loan-against-properties/:id", applicationController.getLoanAgainstPropertyById);
+
 module.exports = router;

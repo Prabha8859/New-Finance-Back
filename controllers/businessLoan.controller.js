@@ -204,9 +204,9 @@ exports.apply = async (req, res, next) => {
       if (rawBody[field] !== undefined) loanData[field] = rawBody[field];
     }
 
-    if (!loanData.loanType) {
-      loanData.loanType = "Business Loan";
-    }
+    // Server-owned values always come from the auth token / route, never the body.
+    loanData.user = req.user.id;
+    loanData.loanType = "Business Loan";
 
     const employmentType = typeof loanData.employmentType === "string" ? loanData.employmentType.trim() : loanData.employmentType;
     if (employmentType === "Self Employed - Business") {

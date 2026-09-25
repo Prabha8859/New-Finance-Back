@@ -65,6 +65,10 @@ exports.apply = async (req, res, next) => {
       if (rawBody[field] !== undefined) loanData[field] = rawBody[field];
     }
 
+    // Server-owned values always come from the auth token / route, never the body.
+    loanData.user = req.user.id;
+    if (!loanData.loanType) loanData.loanType = "Personal Loan";
+
     // Normalize string values used in the salaried form.
     if (loanData.companyName) loanData.companyName = String(loanData.companyName).trim();
     if (loanData.companyType) loanData.companyType = String(loanData.companyType).trim();

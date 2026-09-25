@@ -1,4 +1,4 @@
-const HomeLoan = require("../models/HomeLoan");
+const LoanAgainstProperty = require("../models/LoanAgainstProperty");
 
 const SENTINEL_TRANSACTION_BANK_VALUES = new Set(["Other", "Multiple Transaction Banks"]);
 
@@ -40,13 +40,21 @@ const normalizeTransactionBankNames = (selectedBanks, otherBankName) => {
   };
 };
 
+/** Fields the server owns — written to the document but never taken from the body. */
+const SERVER_FIELDS = ["user", "loanType", "status", "createdAt", "updatedAt", "__v", "_id"];
+
 const COMMON_FIELDS = [
-  "user", "loanType", "loanAmount", "loanTenure", "buyingPropertyType", "buyingPropertyTypeOther",
-  "buyingPropertyAge", "buyingPropertyState", "buyingPropertyCity", "buyingPropertyPincode",
-  "buyingPropertyPincodeOther", "employmentType", "existingEMI", "existingLoanAmount",
-  "existingBanks", "otherBankList", "existingLoanTypes", "otherLoanList", "fullName",
-  "mobile", "email", "dob", "panNumber", "state", "city", "pincode", "residenceStatus",
-  "status", "createdAt", "updatedAt", "__v", "_id",
+  "loanAmount", "loanTenure", "employmentType",
+  "existingEMI", "existingLoanAmount", "existingBanks", "otherBankList",
+  "existingLoanTypes", "otherLoanList",
+  "fullName", "mobile", "email", "dob", "panNumber", "state", "city", "pincode",
+  "residenceStatus",
+];
+
+const COLLATERAL_FIELDS = [
+  "collateralPropertyType", "collateralPropertyTypeOther", "collateralPropertyMarketValue",
+  "collateralPropertyAge", "collateralPropertyState", "collateralPropertyCity",
+  "collateralPropertyPincode", "collateralPropertyPincodeOther",
 ];
 
 const SALARIED_FIELDS = [
@@ -64,9 +72,9 @@ const BUSINESS_FIELDS = [
 ];
 
 const PROFESSIONAL_FIELDS = [
-  "profession", "currentYearTurnover", "priorYearTurnover", "currentYearNetIncome",
-  "previousYearNetIncome", "businessState", "businessCity", "businessPincode",
-  "businessPincodeOther", "businessPlaceStatus", "businessPlaceStatusOther",
+  "profession", "professionOther", "currentYearTurnover", "priorYearTurnover",
+  "currentYearNetIncome", "previousYearNetIncome", "businessState", "businessCity",
+  "businessPincode", "businessPincodeOther", "businessPlaceStatus", "businessPlaceStatusOther",
 ];
 
 const BUSINESS_ONLY_FIELDS = [
@@ -78,21 +86,23 @@ const BUSINESS_ONLY_FIELDS = [
 
 /** Fields exclusive to professionals — never includes the shared business address fields. */
 const PROFESSIONAL_ONLY_FIELDS = [
-  "profession", "currentYearTurnover", "priorYearTurnover",
+  "profession", "professionOther", "currentYearTurnover", "priorYearTurnover",
   "currentYearNetIncome", "previousYearNetIncome",
 ];
 
 const FIELDS = [
   ...COMMON_FIELDS,
+  ...COLLATERAL_FIELDS,
   ...SALARIED_FIELDS,
   ...BUSINESS_FIELDS,
   ...PROFESSIONAL_FIELDS,
 ];
 
+/** Keeps only the fields that belong to the submitted employment type. */
 const sanitizeEmploymentFields = (data) => {
   if (!data || typeof data !== "object") return data;
   const employmentType = String(data.employmentType || "").trim();
-  const allowed = new Set(COMMON_FIELDS);
+  const allowed = new Set([...COMMON_FIELDS, ...COLLATERAL_FIELDS, ...SERVER_FIELDS]);
 
   if (employmentType === "Salaried") {
     SALARIED_FIELDS.forEach((field) => allowed.add(field));
@@ -119,12 +129,12 @@ const normalizeResponse = (record) => {
 exports.apply = async (req, res, next) => {
   try {
     const source = req.body?.data && typeof req.body.data === "object" ? req.body.data : req.body;
-    const data = { user: req.user.id, loanType: "Home Loan" };
+    const data = { user: req.user.id, loanType: "Loan Against Property" };
     for (const field of FIELDS) if (source[field] !== undefined) data[field] = source[field];
 
     // Server-owned values always come from the auth token / route, never the body.
     data.user = req.user.id;
-    data.loanType = "Home Loan";
+    data.loanType = "Loan Against Property";
 
     if (/^\d{2}\/\d{2}\/\d{4}$/.test(String(data.businessEstablishedDate || ""))) {
       const [day, month, year] = data.businessEstablishedDate.split("/");
@@ -150,7 +160,8 @@ exports.apply = async (req, res, next) => {
 
     delete data.transactionBankDisplayName;
     sanitizeEmploymentFields(data);
-    const application = await HomeLoan.create(data);
+
+    const application = await LoanAgainstProperty.create(data);
     res.status(201).json({ success: true, data: normalizeResponse(application) });
   } catch (error) {
     if (error.name === "ValidationError") {
@@ -166,10 +177,13 @@ exports.apply = async (req, res, next) => {
 
 exports.list = async (req, res, next) => {
   try {
-    const applications = await HomeLoan.find({ user: req.user.id }).sort({ createdAt: -1 });
+    const applications = await LoanAgainstProperty.find({ user: req.user.id }).sort({ createdAt: -1 });
     const sanitized = applications.map((app) => normalizeResponse(app));
     res.json({ success: true, data: sanitized });
   } catch (error) {
     next(error);
   }
 };
+
+module.exports.normalizeTransactionBankNames = normalizeTransactionBankNames;
+module.exports.sanitizeLoanAgainstPropertyResponse = normalizeResponse;

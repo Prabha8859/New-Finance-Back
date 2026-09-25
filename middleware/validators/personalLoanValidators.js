@@ -53,8 +53,10 @@ const applyValidator = [
     .if(body("salaryReceivedAs").equals("Other"))
     .notEmpty()
     .withMessage("Please mention salary received as"),
+  // Cash salaries have no bank — the dashboard skips this field in that case.
   body("salaryBankName")
     .if(body("employmentType").equals("Salaried"))
+    .if(body("salaryReceivedAs").not().equals("Cash"))
     .trim()
     .notEmpty()
     .withMessage("Select salary bank name"),

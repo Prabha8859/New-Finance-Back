@@ -3,7 +3,7 @@ const { EMPLOYMENT_TYPES } = require("../constants/employmentTypes");
 const {
   requiredPersonalDetailsFields,
   existingLoanExposureFields,
-  homeIncomeFields,
+  employmentIncomeFields,
 } = require("./schemas/loanSections");
 
 const homeLoanSchema = new mongoose.Schema(
@@ -14,16 +14,18 @@ const homeLoanSchema = new mongoose.Schema(
     loanAmount: { type: Number, required: [true, "Loan amount is required"] },
     loanTenure: { type: Number, required: [true, "Loan tenure is required"] },
 
-    buyingPropertyType: { type: String, required: [true, "Buying property type is required"] },
+    // Optional: the dashboard quick form does not collect buying-property details,
+    // the detailed form does. Validated at the API layer when supplied.
+    buyingPropertyType: { type: String, trim: true },
     buyingPropertyTypeOther: String,
-    buyingPropertyAge: { type: Number, required: [true, "Buying property age is required"] },
-    buyingPropertyState: { type: String, required: [true, "Buying property state is required"] },
-    buyingPropertyCity: { type: String, required: [true, "Buying property city is required"] },
-    buyingPropertyPincode: { type: String, required: [true, "Buying property pincode is required"] },
+    buyingPropertyAge: Number,
+    buyingPropertyState: { type: String, trim: true },
+    buyingPropertyCity: { type: String, trim: true },
+    buyingPropertyPincode: { type: String, trim: true },
     buyingPropertyPincodeOther: String,
 
     employmentType: { type: String, enum: EMPLOYMENT_TYPES.home, required: true },
-    ...homeIncomeFields,
+    ...employmentIncomeFields,
     ...existingLoanExposureFields,
     ...requiredPersonalDetailsFields,
 
