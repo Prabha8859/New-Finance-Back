@@ -1,8 +1,8 @@
 require("dotenv").config({ quiet: true });
 
 const mongoose = require("mongoose");
-const connectDB = require("../config/db");
-const Master = require("../models/Master");
+const connectDB = require("../src/config/db");
+const Master = require("../src/modules/masters/master.model");
 const pincodeData = require("india-pincode-lookup/pincodes.json");
 
 /*

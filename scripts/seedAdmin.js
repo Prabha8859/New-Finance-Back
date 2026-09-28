@@ -2,8 +2,8 @@ require("dotenv").config();
 
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
-const connectDB = require("../config/db");
-const Admin = require("../models/Admin");
+const connectDB = require("../src/config/db");
+const Admin = require("../src/modules/admin/admin.model");
 
 const ADMIN_NAME = process.env.ADMIN_SEED_NAME || "Super Admin";
 const ADMIN_EMAIL = process.env.ADMIN_SEED_EMAIL || "admin@indexiafinance.com";

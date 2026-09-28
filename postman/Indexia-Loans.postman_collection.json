@@ -1,0 +1,1973 @@
+{
+  "info": {
+    "name": "Indexia Finance — Loans API",
+    "_postman_id": "indexia-loans-api-001",
+    "description": "All loan products (Personal, Business, Home, LAP, Balance Transfer, Project Loan, Car Loan) with apply/list + admin endpoints. Set baseUrl, then run the Auth folder first — it saves {{userToken}} / {{adminToken}} automatically.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth — User (run first)",
+      "item": [
+        {
+          "name": "Register & Send OTP",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Rahul Sharma\",\n  \"mobile\": \"9876543210\",\n  \"email\": \"rahul@example.com\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "register"
+              ]
+            },
+            "description": "Sends OTP. With the dev STATIC_OTP the code is always 123456."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// nothing to save here; OTP is static in dev"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Verify OTP (saves userToken)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mobile\": \"9876543210\",\n  \"otp\": \"123456\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/verify-otp",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "verify-otp"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const data = pm.response.json();",
+                  "if (data.token) pm.collectionVariables.set('userToken', data.token);",
+                  "pm.test(\"verified\", () => pm.expect(data.success).to.eql(true));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Auth — Admin (run first)",
+      "item": [
+        {
+          "name": "Admin Login (saves adminToken)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const data = pm.response.json();",
+                  "if (data.token) pm.collectionVariables.set('adminToken', data.token);",
+                  "pm.test(\"admin login\", () => pm.expect(data.success).to.eql(true));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Personal Loan",
+      "item": [
+        {
+          "name": "Apply — Salaried",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"loanAmount\": 1000000,\n  \"loanTenure\": 60,\n  \"companyName\": \"ABC Corp\",\n  \"companyType\": \"Private Limited\",\n  \"companyTypeOther\": \"\",\n  \"monthlySalary\": 75000,\n  \"salaryReceivedAs\": \"Bank Transfer\",\n  \"salaryReceivedAsOther\": \"\",\n  \"salaryBankName\": \"HDFC Bank\",\n  \"salaryBankOther\": \"\",\n  \"fullName\": \"Rahul Sharma\",\n  \"mobile\": \"9876543210\",\n  \"email\": \"rahul@example.com\",\n  \"dob\": \"1992-06-15\",\n  \"panNumber\": \"ABCDE1234F\",\n  \"state\": \"Maharashtra\",\n  \"city\": \"Pune\",\n  \"pincode\": \"411001\",\n  \"residenceStatus\": \"Owned\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/personal-loan/apply",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "personal-loan",
+                "apply"
+              ]
+            },
+            "description": "Apply for Personal Loan as Salaried."
+          }
+        },
+        {
+          "name": "My Applications (list)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/personal-loan/applications",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "personal-loan",
+                "applications"
+              ]
+            },
+            "description": "All Personal Loan applications of the logged-in user."
+          }
+        },
+        {
+          "name": "Admin — All Applications",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/personal-loans",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "personal-loans"
+              ]
+            },
+            "description": "Admin list for Personal Loan."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Business Loan",
+      "item": [
+        {
+          "name": "Apply — Self Employed Business",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"loanAmount\": 1000000,\n  \"loanTenure\": 60,\n  \"employmentType\": \"Self Employed - Business\",\n  \"businessType\": \"Proprietorship\",\n  \"businessTypeOther\": \"\",\n  \"businessName\": \"Aarav Traders\",\n  \"gstNumber\": \"\",\n  \"companyPanNumber\": \"ABCDE1234F\",\n  \"natureOfBusiness\": \"Retail\",\n  \"natureOfBusinessOther\": \"\",\n  \"industryType\": \"Trading\",\n  \"industryTypeOther\": \"\",\n  \"subIndustry\": \"\",\n  \"businessEstablishedDate\": \"2018-05-12\",\n  \"lastYearTurnover\": 2500000,\n  \"last2YearsTurnover\": 2300000,\n  \"lastYearNetIncome\": 350000,\n  \"last2YearsNetIncome\": 300000,\n  \"businessState\": \"Maharashtra\",\n  \"businessCity\": \"Pune\",\n  \"businessPincode\": \"411001\",\n  \"businessPincodeOther\": \"\",\n  \"businessPlaceStatus\": \"Owned\",\n  \"businessPlaceStatusOther\": \"\",\n  \"transactionBankOther\": \"\",\n  \"transactionBankName\": \"Multiple Transaction Banks\",\n  \"transactionBanks\": [\n    \"HDFC Bank\",\n    \"State Bank of India\",\n    \"ICICI Bank\"\n  ],\n  \"fullName\": \"Rahul Sharma\",\n  \"mobile\": \"9876543210\",\n  \"email\": \"rahul@example.com\",\n  \"dob\": \"1992-06-15\",\n  \"panNumber\": \"ABCDE1234F\",\n  \"state\": \"Maharashtra\",\n  \"city\": \"Pune\",\n  \"pincode\": \"411001\",\n  \"residenceStatus\": \"Owned\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/business-loan/apply",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "business-loan",
+                "apply"
+              ]
+            },
+            "description": "Apply for Business Loan as Self Employed - Business."
+          }
+        },
+        {
+          "name": "Apply — Self Employed Professional",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"loanAmount\": 1000000,\n  \"loanTenure\": 60,\n  \"employmentType\": \"Self Employed - Professional\",\n  \"profession\": \"Doctor\",\n  \"professionOther\": \"\",\n  \"currentYearTurnover\": 500000,\n  \"priorYearTurnover\": 450000,\n  \"currentYearNetIncome\": 70000,\n  \"previousYearNetIncome\": 65000,\n  \"businessState\": \"Maharashtra\",\n  \"businessCity\": \"Pune\",\n  \"businessPincode\": \"411001\",\n  \"businessPincodeOther\": \"\",\n  \"businessPlaceStatus\": \"Owned\",\n  \"businessPlaceStatusOther\": \"\",\n  \"transactionBankOther\": \"\",\n  \"transactionBankName\": \"Multiple Transaction Banks\",\n  \"transactionBanks\": [\n    \"HDFC Bank\",\n    \"State Bank of India\",\n    \"ICICI Bank\"\n  ],\n  \"fullName\": \"Rahul Sharma\",\n  \"mobile\": \"9876543210\",\n  \"email\": \"rahul@example.com\",\n  \"dob\": \"1992-06-15\",\n  \"panNumber\": \"ABCDE1234F\",\n  \"state\": \"Maharashtra\",\n  \"city\": \"Pune\",\n  \"pincode\": \"411001\",\n  \"residenceStatus\": \"Owned\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/business-loan/apply",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "business-loan",
+                "apply"
+              ]
+            },
+            "description": "Apply for Business Loan as Self Employed - Professional."
+          }
+        },
+        {
+          "name": "Apply — Multiple transaction banks (object form)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"loanAmount\": 1000000,\n  \"loanTenure\": 60,\n  \"employmentType\": \"Self Employed - Business\",\n  \"businessType\": \"Proprietorship\",\n  \"businessTypeOther\": \"\",\n  \"businessName\": \"Aarav Traders\",\n  \"gstNumber\": \"\",\n  \"companyPanNumber\": \"ABCDE1234F\",\n  \"natureOfBusiness\": \"Retail\",\n  \"natureOfBusinessOther\": \"\",\n  \"industryType\": \"Trading\",\n  \"industryTypeOther\": \"\",\n  \"subIndustry\": \"\",\n  \"businessEstablishedDate\": \"2018-05-12\",\n  \"lastYearTurnover\": 2500000,\n  \"last2YearsTurnover\": 2300000,\n  \"lastYearNetIncome\": 350000,\n  \"last2YearsNetIncome\": 300000,\n  \"businessState\": \"Maharashtra\",\n  \"businessCity\": \"Pune\",\n  \"businessPincode\": \"411001\",\n  \"businessPincodeOther\": \"\",\n  \"businessPlaceStatus\": \"Owned\",\n  \"businessPlaceStatusOther\": \"\",\n  \"transactionBankOther\": \"\",\n  \"transactionBankName\": {\n    \"displayName\": \"Multiple Transaction Banks\",\n    \"banks\": [\n      \"HDFC Bank\",\n      \"State Bank of India\",\n      \"ICICI Bank\"\n    ]\n  },\n  \"transactionBanks\": [\n    \"HDFC Bank\",\n    \"State Bank of India\",\n    \"ICICI Bank\"\n  ],\n  \"fullName\": \"Rahul Sharma\",\n  \"mobile\": \"9876543210\",\n  \"email\": \"rahul@example.com\",\n  \"dob\": \"1992-06-15\",\n  \"panNumber\": \"ABCDE1234F\",\n  \"state\": \"Maharashtra\",\n  \"city\": \"Pune\",\n  \"pincode\": \"411001\",\n  \"residenceStatus\": \"Owned\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/business-loan/apply",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "business-loan",
+                "apply"
+              ]
+            },
+            "description": "Canonical multi-bank object form — same result as transactionBanks array."
+          }
+        },
+        {
+          "name": "My Applications (list)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/business-loan/applications",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "business-loan",
+                "applications"
+              ]
+            },
+            "description": "All Business Loan applications of the logged-in user."
+          }
+        },
+        {
+          "name": "Admin — All Applications",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/business-loans",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "business-loans"
+              ]
+            },
+            "description": "Admin list for Business Loan."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Home Loan",
+      "item": [
+        {
+          "name": "Apply — Salaried",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"loanAmount\": 1000000,\n  \"loanTenure\": 60,\n  \"employmentType\": \"Salaried\",\n  \"buyingPropertyType\": \"Villa\",\n  \"buyingPropertyTypeOther\": \"\",\n  \"buyingPropertyAge\": 5,\n  \"buyingPropertyState\": \"Maharashtra\",\n  \"buyingPropertyCity\": \"Pune\",\n  \"buyingPropertyPincode\": \"411001\",\n  \"buyingPropertyPincodeOther\": \"\",\n  \"companyName\": \"ABC Corp\",\n  \"companyType\": \"Private Limited\",\n  \"companyTypeOther\": \"\",\n  \"monthlySalary\": 75000,\n  \"salaryReceivedAs\": \"Bank Transfer\",\n  \"salaryReceivedAsOther\": \"\",\n  \"salaryBankName\": \"HDFC Bank\",\n  \"salaryBankOther\": \"\",\n  \"fullName\": \"Rahul Sharma\",\n  \"mobile\": \"9876543210\",\n  \"email\": \"rahul@example.com\",\n  \"dob\": \"1992-06-15\",\n  \"panNumber\": \"ABCDE1234F\",\n  \"state\": \"Maharashtra\",\n  \"city\": \"Pune\",\n  \"pincode\": \"411001\",\n  \"residenceStatus\": \"Owned\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/home-loan/apply",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "home-loan",
+                "apply"
+              ]
+            },
+            "description": "Apply for Home Loan as Salaried."
+          }
+        },
+        {
+          "name": "Apply — Self Employed Business",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"loanAmount\": 1000000,\n  \"loanTenure\": 60,\n  \"employmentType\": \"Self Employed - Business\",\n  \"buyingPropertyType\": \"Villa\",\n  \"buyingPropertyTypeOther\": \"\",\n  \"buyingPropertyAge\": 5,\n  \"buyingPropertyState\": \"Maharashtra\",\n  \"buyingPropertyCity\": \"Pune\",\n  \"buyingPropertyPincode\": \"411001\",\n  \"buyingPropertyPincodeOther\": \"\",\n  \"businessType\": \"Proprietorship\",\n  \"businessTypeOther\": \"\",\n  \"businessName\": \"Aarav Traders\",\n  \"gstNumber\": \"\",\n  \"companyPanNumber\": \"ABCDE1234F\",\n  \"natureOfBusiness\": \"Retail\",\n  \"natureOfBusinessOther\": \"\",\n  \"industryType\": \"Trading\",\n  \"industryTypeOther\": \"\",\n  \"subIndustry\": \"\",\n  \"businessEstablishedDate\": \"2018-05-12\",\n  \"lastYearTurnover\": 2500000,\n  \"last2YearsTurnover\": 2300000,\n  \"lastYearNetIncome\": 350000,\n  \"last2YearsNetIncome\": 300000,\n  \"businessState\": \"Maharashtra\",\n  \"businessCity\": \"Pune\",\n  \"businessPincode\": \"411001\",\n  \"businessPincodeOther\": \"\",\n  \"businessPlaceStatus\": \"Owned\",\n  \"businessPlaceStatusOther\": \"\",\n  \"transactionBankOther\": \"\",\n  \"transactionBankName\": \"Multiple Transaction Banks\",\n  \"transactionBanks\": [\n    \"HDFC Bank\",\n    \"State Bank of India\",\n    \"ICICI Bank\"\n  ],\n  \"fullName\": \"Rahul Sharma\",\n  \"mobile\": \"9876543210\",\n  \"email\": \"rahul@example.com\",\n  \"dob\": \"1992-06-15\",\n  \"panNumber\": \"ABCDE1234F\",\n  \"state\": \"Maharashtra\",\n  \"city\": \"Pune\",\n  \"pincode\": \"411001\",\n  \"residenceStatus\": \"Owned\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/home-loan/apply",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "home-loan",
+                "apply"
+              ]
+            },
+            "description": "Apply for Home Loan as Self Employed - Business."
+          }
+        },
+        {
+          "name": "Apply — Self Employed Professional",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"loanAmount\": 1000000,\n  \"loanTenure\": 60,\n  \"employmentType\": \"Self Employed - Professional\",\n  \"buyingPropertyType\": \"Villa\",\n  \"buyingPropertyTypeOther\": \"\",\n  \"buyingPropertyAge\": 5,\n  \"buyingPropertyState\": \"Maharashtra\",\n  \"buyingPropertyCity\": \"Pune\",\n  \"buyingPropertyPincode\": \"411001\",\n  \"buyingPropertyPincodeOther\": \"\",\n  \"profession\": \"Doctor\",\n  \"professionOther\": \"\",\n  \"currentYearTurnover\": 500000,\n  \"priorYearTurnover\": 450000,\n  \"currentYearNetIncome\": 70000,\n  \"previousYearNetIncome\": 65000,\n  \"businessState\": \"Maharashtra\",\n  \"businessCity\": \"Pune\",\n  \"businessPincode\": \"411001\",\n  \"businessPincodeOther\": \"\",\n  \"businessPlaceStatus\": \"Owned\",\n  \"businessPlaceStatusOther\": \"\",\n  \"transactionBankOther\": \"\",\n  \"transactionBankName\": \"Multiple Transaction Banks\",\n  \"transactionBanks\": [\n    \"HDFC Bank\",\n    \"State Bank of India\",\n    \"ICICI Bank\"\n  ],\n  \"fullName\": \"Rahul Sharma\",\n  \"mobile\": \"9876543210\",\n  \"email\": \"rahul@example.com\",\n  \"dob\": \"1992-06-15\",\n  \"panNumber\": \"ABCDE1234F\",\n  \"state\": \"Maharashtra\",\n  \"city\": \"Pune\",\n  \"pincode\": \"411001\",\n  \"residenceStatus\": \"Owned\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/home-loan/apply",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "home-loan",
+                "apply"
+              ]
+            },
+            "description": "Apply for Home Loan as Self Employed - Professional."
+          }
+        },
+        {
+          "name": "Apply — Multiple transaction banks (object form)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"loanAmount\": 1000000,\n  \"loanTenure\": 60,\n  \"employmentType\": \"Salaried\",\n  \"buyingPropertyType\": \"Villa\",\n  \"buyingPropertyTypeOther\": \"\",\n  \"buyingPropertyAge\": 5,\n  \"buyingPropertyState\": \"Maharashtra\",\n  \"buyingPropertyCity\": \"Pune\",\n  \"buyingPropertyPincode\": \"411001\",\n  \"buyingPropertyPincodeOther\": \"\",\n  \"companyName\": \"ABC Corp\",\n  \"companyType\": \"Private Limited\",\n  \"companyTypeOther\": \"\",\n  \"monthlySalary\": 75000,\n  \"salaryReceivedAs\": \"Bank Transfer\",\n  \"salaryReceivedAsOther\": \"\",\n  \"salaryBankName\": \"HDFC Bank\",\n  \"salaryBankOther\": \"\",\n  \"fullName\": \"Rahul Sharma\",\n  \"mobile\": \"9876543210\",\n  \"email\": \"rahul@example.com\",\n  \"dob\": \"1992-06-15\",\n  \"panNumber\": \"ABCDE1234F\",\n  \"state\": \"Maharashtra\",\n  \"city\": \"Pune\",\n  \"pincode\": \"411001\",\n  \"residenceStatus\": \"Owned\",\n  \"transactionBankName\": {\n    \"displayName\": \"Multiple Transaction Banks\",\n    \"banks\": [\n      \"HDFC Bank\",\n      \"State Bank of India\",\n      \"ICICI Bank\"\n    ]\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/home-loan/apply",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "home-loan",
+                "apply"
+              ]
+            },
+            "description": "Canonical multi-bank object form — same result as transactionBanks array."
+          }
+        },
+        {
+          "name": "My Applications (list)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/home-loan/applications",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "home-loan",
+                "applications"
+              ]
+            },
+            "description": "All Home Loan applications of the logged-in user."
+          }
+        },
+        {
+          "name": "Admin — All Applications",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/home-loans",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "home-loans"
+              ]
+            },
+            "description": "Admin list for Home Loan."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Loan Against Property",
+      "item": [
+        {
+          "name": "Apply — Salaried",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"loanAmount\": 1000000,\n  \"loanTenure\": 60,\n  \"employmentType\": \"Salaried\",\n  \"collateralPropertyType\": \"Residential Plot\",\n  \"collateralPropertyTypeOther\": \"\",\n  \"collateralPropertyMarketValue\": 6000000,\n  \"collateralPropertyAge\": 10,\n  \"collateralPropertyState\": \"Maharashtra\",\n  \"collateralPropertyCity\": \"Pune\",\n  \"collateralPropertyPincode\": \"411001\",\n  \"collateralPropertyPincodeOther\": \"\",\n  \"companyName\": \"ABC Corp\",\n  \"companyType\": \"Private Limited\",\n  \"companyTypeOther\": \"\",\n  \"monthlySalary\": 75000,\n  \"salaryReceivedAs\": \"Bank Transfer\",\n  \"salaryReceivedAsOther\": \"\",\n  \"salaryBankName\": \"HDFC Bank\",\n  \"salaryBankOther\": \"\",\n  \"fullName\": \"Rahul Sharma\",\n  \"mobile\": \"9876543210\",\n  \"email\": \"rahul@example.com\",\n  \"dob\": \"1992-06-15\",\n  \"panNumber\": \"ABCDE1234F\",\n  \"state\": \"Maharashtra\",\n  \"city\": \"Pune\",\n  \"pincode\": \"411001\",\n  \"residenceStatus\": \"Owned\",\n  \"existingEMI\": 0,\n  \"existingLoanAmount\": 0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/loan-against-property/apply",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "loan-against-property",
+                "apply"
+              ]
+            },
+            "description": "Apply for Loan Against Property as Salaried."
+          }
+        },
+        {
+          "name": "Apply — Self Employed Business",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"loanAmount\": 1000000,\n  \"loanTenure\": 60,\n  \"employmentType\": \"Self Employed - Business\",\n  \"collateralPropertyType\": \"Residential Plot\",\n  \"collateralPropertyTypeOther\": \"\",\n  \"collateralPropertyMarketValue\": 6000000,\n  \"collateralPropertyAge\": 10,\n  \"collateralPropertyState\": \"Maharashtra\",\n  \"collateralPropertyCity\": \"Pune\",\n  \"collateralPropertyPincode\": \"411001\",\n  \"collateralPropertyPincodeOther\": \"\",\n  \"businessType\": \"Proprietorship\",\n  \"businessTypeOther\": \"\",\n  \"businessName\": \"Aarav Traders\",\n  \"gstNumber\": \"\",\n  \"companyPanNumber\": \"ABCDE1234F\",\n  \"natureOfBusiness\": \"Retail\",\n  \"natureOfBusinessOther\": \"\",\n  \"industryType\": \"Trading\",\n  \"industryTypeOther\": \"\",\n  \"subIndustry\": \"\",\n  \"businessEstablishedDate\": \"2018-05-12\",\n  \"lastYearTurnover\": 2500000,\n  \"last2YearsTurnover\": 2300000,\n  \"lastYearNetIncome\": 350000,\n  \"last2YearsNetIncome\": 300000,\n  \"businessState\": \"Maharashtra\",\n  \"businessCity\": \"Pune\",\n  \"businessPincode\": \"411001\",\n  \"businessPincodeOther\": \"\",\n  \"businessPlaceStatus\": \"Owned\",\n  \"businessPlaceStatusOther\": \"\",\n  \"transactionBankOther\": \"\",\n  \"transactionBankName\": \"Multiple Transaction Banks\",\n  \"transactionBanks\": [\n    \"HDFC Bank\",\n    \"State Bank of India\",\n    \"ICICI Bank\"\n  ],\n  \"fullName\": \"Rahul Sharma\",\n  \"mobile\": \"9876543210\",\n  \"email\": \"rahul@example.com\",\n  \"dob\": \"1992-06-15\",\n  \"panNumber\": \"ABCDE1234F\",\n  \"state\": \"Maharashtra\",\n  \"city\": \"Pune\",\n  \"pincode\": \"411001\",\n  \"residenceStatus\": \"Owned\",\n  \"existingEMI\": 0,\n  \"existingLoanAmount\": 0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/loan-against-property/apply",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "loan-against-property",
+                "apply"
+              ]
+            },
+            "description": "Apply for Loan Against Property as Self Employed - Business."
+          }
+        },
+        {
+          "name": "Apply — Self Employed Professional",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"loanAmount\": 1000000,\n  \"loanTenure\": 60,\n  \"employmentType\": \"Self Employed - Professional\",\n  \"collateralPropertyType\": \"Residential Plot\",\n  \"collateralPropertyTypeOther\": \"\",\n  \"collateralPropertyMarketValue\": 6000000,\n  \"collateralPropertyAge\": 10,\n  \"collateralPropertyState\": \"Maharashtra\",\n  \"collateralPropertyCity\": \"Pune\",\n  \"collateralPropertyPincode\": \"411001\",\n  \"collateralPropertyPincodeOther\": \"\",\n  \"profession\": \"Doctor\",\n  \"professionOther\": \"\",\n  \"currentYearTurnover\": 500000,\n  \"priorYearTurnover\": 450000,\n  \"currentYearNetIncome\": 70000,\n  \"previousYearNetIncome\": 65000,\n  \"businessState\": \"Maharashtra\",\n  \"businessCity\": \"Pune\",\n  \"businessPincode\": \"411001\",\n  \"businessPincodeOther\": \"\",\n  \"businessPlaceStatus\": \"Owned\",\n  \"businessPlaceStatusOther\": \"\",\n  \"transactionBankOther\": \"\",\n  \"transactionBankName\": \"Multiple Transaction Banks\",\n  \"transactionBanks\": [\n    \"HDFC Bank\",\n    \"State Bank of India\",\n    \"ICICI Bank\"\n  ],\n  \"fullName\": \"Rahul Sharma\",\n  \"mobile\": \"9876543210\",\n  \"email\": \"rahul@example.com\",\n  \"dob\": \"1992-06-15\",\n  \"panNumber\": \"ABCDE1234F\",\n  \"state\": \"Maharashtra\",\n  \"city\": \"Pune\",\n  \"pincode\": \"411001\",\n  \"residenceStatus\": \"Owned\",\n  \"existingEMI\": 0,\n  \"existingLoanAmount\": 0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/loan-against-property/apply",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "loan-against-property",
+                "apply"
+              ]
+            },
+            "description": "Apply for Loan Against Property as Self Employed - Professional."
+          }
+        },
+        {
+          "name": "Apply — Multiple transaction banks (object form)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"loanAmount\": 1000000,\n  \"loanTenure\": 60,\n  \"employmentType\": \"Salaried\",\n  \"collateralPropertyType\": \"Residential Plot\",\n  \"collateralPropertyTypeOther\": \"\",\n  \"collateralPropertyMarketValue\": 6000000,\n  \"collateralPropertyAge\": 10,\n  \"collateralPropertyState\": \"Maharashtra\",\n  \"collateralPropertyCity\": \"Pune\",\n  \"collateralPropertyPincode\": \"411001\",\n  \"collateralPropertyPincodeOther\": \"\",\n  \"companyName\": \"ABC Corp\",\n  \"companyType\": \"Private Limited\",\n  \"companyTypeOther\": \"\",\n  \"monthlySalary\": 75000,\n  \"salaryReceivedAs\": \"Bank Transfer\",\n  \"salaryReceivedAsOther\": \"\",\n  \"salaryBankName\": \"HDFC Bank\",\n  \"salaryBankOther\": \"\",\n  \"fullName\": \"Rahul Sharma\",\n  \"mobile\": \"9876543210\",\n  \"email\": \"rahul@example.com\",\n  \"dob\": \"1992-06-15\",\n  \"panNumber\": \"ABCDE1234F\",\n  \"state\": \"Maharashtra\",\n  \"city\": \"Pune\",\n  \"pincode\": \"411001\",\n  \"residenceStatus\": \"Owned\",\n  \"existingEMI\": 0,\n  \"existingLoanAmount\": 0,\n  \"transactionBankName\": {\n    \"displayName\": \"Multiple Transaction Banks\",\n    \"banks\": [\n      \"HDFC Bank\",\n      \"State Bank of India\",\n      \"ICICI Bank\"\n    ]\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/loan-against-property/apply",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "loan-against-property",
+                "apply"
+              ]
+            },
+            "description": "Canonical multi-bank object form — same result as transactionBanks array."
+          }
+        },
+        {
+          "name": "My Applications (list)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/loan-against-property/applications",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "loan-against-property",
+                "applications"
+              ]
+            },
+            "description": "All Loan Against Property applications of the logged-in user."
+          }
+        },
+        {
+          "name": "Admin — All Applications",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/loan-against-properties",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "loan-against-properties"
+              ]
+            },
+            "description": "Admin list for Loan Against Property."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Balance Transfer",
+      "item": [
+        {
+          "name": "Apply — Salaried",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"loanAmount\": 1000000,\n  \"loanTenure\": 60,\n  \"employmentType\": \"Salaried\",\n  \"balanceTransferType\": \"Home loan\",\n  \"balanceTransferTypeOther\": \"\",\n  \"currentPropertyValue\": 5000000,\n  \"topUpAmount\": 200000,\n  \"companyName\": \"ABC Corp\",\n  \"companyType\": \"Private Limited\",\n  \"companyTypeOther\": \"\",\n  \"monthlySalary\": 75000,\n  \"salaryReceivedAs\": \"Bank Transfer\",\n  \"salaryReceivedAsOther\": \"\",\n  \"salaryBankName\": \"HDFC Bank\",\n  \"salaryBankOther\": \"\",\n  \"fullName\": \"Rahul Sharma\",\n  \"mobile\": \"9876543210\",\n  \"email\": \"rahul@example.com\",\n  \"dob\": \"1992-06-15\",\n  \"panNumber\": \"ABCDE1234F\",\n  \"state\": \"Maharashtra\",\n  \"city\": \"Pune\",\n  \"pincode\": \"411001\",\n  \"residenceStatus\": \"Owned\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/balance-transfer/apply",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "balance-transfer",
+                "apply"
+              ]
+            },
+            "description": "Apply for Balance Transfer as Salaried."
+          }
+        },
+        {
+          "name": "Apply — Self Employed Business",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"loanAmount\": 1000000,\n  \"loanTenure\": 60,\n  \"employmentType\": \"Self Employed - Business\",\n  \"balanceTransferType\": \"Home loan\",\n  \"balanceTransferTypeOther\": \"\",\n  \"currentPropertyValue\": 5000000,\n  \"topUpAmount\": 200000,\n  \"businessType\": \"Proprietorship\",\n  \"businessTypeOther\": \"\",\n  \"businessName\": \"Aarav Traders\",\n  \"gstNumber\": \"\",\n  \"companyPanNumber\": \"ABCDE1234F\",\n  \"natureOfBusiness\": \"Retail\",\n  \"natureOfBusinessOther\": \"\",\n  \"industryType\": \"Trading\",\n  \"industryTypeOther\": \"\",\n  \"subIndustry\": \"\",\n  \"businessEstablishedDate\": \"2018-05-12\",\n  \"lastYearTurnover\": 2500000,\n  \"last2YearsTurnover\": 2300000,\n  \"lastYearNetIncome\": 350000,\n  \"last2YearsNetIncome\": 300000,\n  \"businessState\": \"Maharashtra\",\n  \"businessCity\": \"Pune\",\n  \"businessPincode\": \"411001\",\n  \"businessPincodeOther\": \"\",\n  \"businessPlaceStatus\": \"Owned\",\n  \"businessPlaceStatusOther\": \"\",\n  \"transactionBankOther\": \"\",\n  \"transactionBankName\": \"Multiple Transaction Banks\",\n  \"transactionBanks\": [\n    \"HDFC Bank\",\n    \"State Bank of India\",\n    \"ICICI Bank\"\n  ],\n  \"fullName\": \"Rahul Sharma\",\n  \"mobile\": \"9876543210\",\n  \"email\": \"rahul@example.com\",\n  \"dob\": \"1992-06-15\",\n  \"panNumber\": \"ABCDE1234F\",\n  \"state\": \"Maharashtra\",\n  \"city\": \"Pune\",\n  \"pincode\": \"411001\",\n  \"residenceStatus\": \"Owned\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/balance-transfer/apply",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "balance-transfer",
+                "apply"
+              ]
+            },
+            "description": "Apply for Balance Transfer as Self Employed - Business."
+          }
+        },
+        {
+          "name": "Apply — Self Employed Professional",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"loanAmount\": 1000000,\n  \"loanTenure\": 60,\n  \"employmentType\": \"Self Employed - Professional\",\n  \"balanceTransferType\": \"Home loan\",\n  \"balanceTransferTypeOther\": \"\",\n  \"currentPropertyValue\": 5000000,\n  \"topUpAmount\": 200000,\n  \"profession\": \"Doctor\",\n  \"professionOther\": \"\",\n  \"currentYearTurnover\": 500000,\n  \"priorYearTurnover\": 450000,\n  \"currentYearNetIncome\": 70000,\n  \"previousYearNetIncome\": 65000,\n  \"businessState\": \"Maharashtra\",\n  \"businessCity\": \"Pune\",\n  \"businessPincode\": \"411001\",\n  \"businessPincodeOther\": \"\",\n  \"businessPlaceStatus\": \"Owned\",\n  \"businessPlaceStatusOther\": \"\",\n  \"transactionBankOther\": \"\",\n  \"transactionBankName\": \"Multiple Transaction Banks\",\n  \"transactionBanks\": [\n    \"HDFC Bank\",\n    \"State Bank of India\",\n    \"ICICI Bank\"\n  ],\n  \"fullName\": \"Rahul Sharma\",\n  \"mobile\": \"9876543210\",\n  \"email\": \"rahul@example.com\",\n  \"dob\": \"1992-06-15\",\n  \"panNumber\": \"ABCDE1234F\",\n  \"state\": \"Maharashtra\",\n  \"city\": \"Pune\",\n  \"pincode\": \"411001\",\n  \"residenceStatus\": \"Owned\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/balance-transfer/apply",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "balance-transfer",
+                "apply"
+              ]
+            },
+            "description": "Apply for Balance Transfer as Self Employed - Professional."
+          }
+        },
+        {
+          "name": "Apply — Multiple transaction banks (object form)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"loanAmount\": 1000000,\n  \"loanTenure\": 60,\n  \"employmentType\": \"Salaried\",\n  \"balanceTransferType\": \"Home loan\",\n  \"balanceTransferTypeOther\": \"\",\n  \"currentPropertyValue\": 5000000,\n  \"topUpAmount\": 200000,\n  \"companyName\": \"ABC Corp\",\n  \"companyType\": \"Private Limited\",\n  \"companyTypeOther\": \"\",\n  \"monthlySalary\": 75000,\n  \"salaryReceivedAs\": \"Bank Transfer\",\n  \"salaryReceivedAsOther\": \"\",\n  \"salaryBankName\": \"HDFC Bank\",\n  \"salaryBankOther\": \"\",\n  \"fullName\": \"Rahul Sharma\",\n  \"mobile\": \"9876543210\",\n  \"email\": \"rahul@example.com\",\n  \"dob\": \"1992-06-15\",\n  \"panNumber\": \"ABCDE1234F\",\n  \"state\": \"Maharashtra\",\n  \"city\": \"Pune\",\n  \"pincode\": \"411001\",\n  \"residenceStatus\": \"Owned\",\n  \"transactionBankName\": {\n    \"displayName\": \"Multiple Transaction Banks\",\n    \"banks\": [\n      \"HDFC Bank\",\n      \"State Bank of India\",\n      \"ICICI Bank\"\n    ]\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/balance-transfer/apply",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "balance-transfer",
+                "apply"
+              ]
+            },
+            "description": "Canonical multi-bank object form — same result as transactionBanks array."
+          }
+        },
+        {
+          "name": "My Applications (list)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/balance-transfer/applications",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "balance-transfer",
+                "applications"
+              ]
+            },
+            "description": "All Balance Transfer applications of the logged-in user."
+          }
+        },
+        {
+          "name": "Admin — All Applications",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/balance-transfers",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "balance-transfers"
+              ]
+            },
+            "description": "Admin list for Balance Transfer."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Project Loan",
+      "item": [
+        {
+          "name": "Apply — Salaried",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"loanAmount\": 1000000,\n  \"loanTenure\": 60,\n  \"employmentType\": \"Salaried\",\n  \"projectType\": \"Construction Project\",\n  \"projectTypeOther\": \"\",\n  \"totalProjectCost\": 10000000,\n  \"projectStartDate\": \"2026-01-15\",\n  \"projectCompletionDate\": \"2028-06-30\",\n  \"ownInvestment\": 2000000,\n  \"companyName\": \"ABC Corp\",\n  \"companyType\": \"Private Limited\",\n  \"companyTypeOther\": \"\",\n  \"monthlySalary\": 75000,\n  \"salaryReceivedAs\": \"Bank Transfer\",\n  \"salaryReceivedAsOther\": \"\",\n  \"salaryBankName\": \"HDFC Bank\",\n  \"salaryBankOther\": \"\",\n  \"fullName\": \"Rahul Sharma\",\n  \"mobile\": \"9876543210\",\n  \"email\": \"rahul@example.com\",\n  \"dob\": \"1992-06-15\",\n  \"panNumber\": \"ABCDE1234F\",\n  \"state\": \"Maharashtra\",\n  \"city\": \"Pune\",\n  \"pincode\": \"411001\",\n  \"residenceStatus\": \"Owned\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/project-loan/apply",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "project-loan",
+                "apply"
+              ]
+            },
+            "description": "Apply for Project Loan as Salaried."
+          }
+        },
+        {
+          "name": "Apply — Self Employed Business",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"loanAmount\": 1000000,\n  \"loanTenure\": 60,\n  \"employmentType\": \"Self Employed - Business\",\n  \"projectType\": \"Construction Project\",\n  \"projectTypeOther\": \"\",\n  \"totalProjectCost\": 10000000,\n  \"projectStartDate\": \"2026-01-15\",\n  \"projectCompletionDate\": \"2028-06-30\",\n  \"ownInvestment\": 2000000,\n  \"businessType\": \"Proprietorship\",\n  \"businessTypeOther\": \"\",\n  \"businessName\": \"Aarav Traders\",\n  \"gstNumber\": \"\",\n  \"companyPanNumber\": \"ABCDE1234F\",\n  \"natureOfBusiness\": \"Retail\",\n  \"natureOfBusinessOther\": \"\",\n  \"industryType\": \"Trading\",\n  \"industryTypeOther\": \"\",\n  \"subIndustry\": \"\",\n  \"businessEstablishedDate\": \"2018-05-12\",\n  \"lastYearTurnover\": 2500000,\n  \"last2YearsTurnover\": 2300000,\n  \"lastYearNetIncome\": 350000,\n  \"last2YearsNetIncome\": 300000,\n  \"businessState\": \"Maharashtra\",\n  \"businessCity\": \"Pune\",\n  \"businessPincode\": \"411001\",\n  \"businessPincodeOther\": \"\",\n  \"businessPlaceStatus\": \"Owned\",\n  \"businessPlaceStatusOther\": \"\",\n  \"transactionBankOther\": \"\",\n  \"transactionBankName\": \"Multiple Transaction Banks\",\n  \"transactionBanks\": [\n    \"HDFC Bank\",\n    \"State Bank of India\",\n    \"ICICI Bank\"\n  ],\n  \"fullName\": \"Rahul Sharma\",\n  \"mobile\": \"9876543210\",\n  \"email\": \"rahul@example.com\",\n  \"dob\": \"1992-06-15\",\n  \"panNumber\": \"ABCDE1234F\",\n  \"state\": \"Maharashtra\",\n  \"city\": \"Pune\",\n  \"pincode\": \"411001\",\n  \"residenceStatus\": \"Owned\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/project-loan/apply",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "project-loan",
+                "apply"
+              ]
+            },
+            "description": "Apply for Project Loan as Self Employed - Business."
+          }
+        },
+        {
+          "name": "Apply — Self Employed Professional",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"loanAmount\": 1000000,\n  \"loanTenure\": 60,\n  \"employmentType\": \"Self Employed - Professional\",\n  \"projectType\": \"Construction Project\",\n  \"projectTypeOther\": \"\",\n  \"totalProjectCost\": 10000000,\n  \"projectStartDate\": \"2026-01-15\",\n  \"projectCompletionDate\": \"2028-06-30\",\n  \"ownInvestment\": 2000000,\n  \"profession\": \"Doctor\",\n  \"professionOther\": \"\",\n  \"currentYearTurnover\": 500000,\n  \"priorYearTurnover\": 450000,\n  \"currentYearNetIncome\": 70000,\n  \"previousYearNetIncome\": 65000,\n  \"businessState\": \"Maharashtra\",\n  \"businessCity\": \"Pune\",\n  \"businessPincode\": \"411001\",\n  \"businessPincodeOther\": \"\",\n  \"businessPlaceStatus\": \"Owned\",\n  \"businessPlaceStatusOther\": \"\",\n  \"transactionBankOther\": \"\",\n  \"transactionBankName\": \"Multiple Transaction Banks\",\n  \"transactionBanks\": [\n    \"HDFC Bank\",\n    \"State Bank of India\",\n    \"ICICI Bank\"\n  ],\n  \"fullName\": \"Rahul Sharma\",\n  \"mobile\": \"9876543210\",\n  \"email\": \"rahul@example.com\",\n  \"dob\": \"1992-06-15\",\n  \"panNumber\": \"ABCDE1234F\",\n  \"state\": \"Maharashtra\",\n  \"city\": \"Pune\",\n  \"pincode\": \"411001\",\n  \"residenceStatus\": \"Owned\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/project-loan/apply",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "project-loan",
+                "apply"
+              ]
+            },
+            "description": "Apply for Project Loan as Self Employed - Professional."
+          }
+        },
+        {
+          "name": "Apply — Multiple transaction banks (object form)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"loanAmount\": 1000000,\n  \"loanTenure\": 60,\n  \"employmentType\": \"Salaried\",\n  \"projectType\": \"Construction Project\",\n  \"projectTypeOther\": \"\",\n  \"totalProjectCost\": 10000000,\n  \"projectStartDate\": \"2026-01-15\",\n  \"projectCompletionDate\": \"2028-06-30\",\n  \"ownInvestment\": 2000000,\n  \"companyName\": \"ABC Corp\",\n  \"companyType\": \"Private Limited\",\n  \"companyTypeOther\": \"\",\n  \"monthlySalary\": 75000,\n  \"salaryReceivedAs\": \"Bank Transfer\",\n  \"salaryReceivedAsOther\": \"\",\n  \"salaryBankName\": \"HDFC Bank\",\n  \"salaryBankOther\": \"\",\n  \"fullName\": \"Rahul Sharma\",\n  \"mobile\": \"9876543210\",\n  \"email\": \"rahul@example.com\",\n  \"dob\": \"1992-06-15\",\n  \"panNumber\": \"ABCDE1234F\",\n  \"state\": \"Maharashtra\",\n  \"city\": \"Pune\",\n  \"pincode\": \"411001\",\n  \"residenceStatus\": \"Owned\",\n  \"transactionBankName\": {\n    \"displayName\": \"Multiple Transaction Banks\",\n    \"banks\": [\n      \"HDFC Bank\",\n      \"State Bank of India\",\n      \"ICICI Bank\"\n    ]\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/project-loan/apply",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "project-loan",
+                "apply"
+              ]
+            },
+            "description": "Canonical multi-bank object form — same result as transactionBanks array."
+          }
+        },
+        {
+          "name": "My Applications (list)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/project-loan/applications",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "project-loan",
+                "applications"
+              ]
+            },
+            "description": "All Project Loan applications of the logged-in user."
+          }
+        },
+        {
+          "name": "Admin — All Applications",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/project-loans",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "project-loans"
+              ]
+            },
+            "description": "Admin list for Project Loan."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Car Loan",
+      "item": [
+        {
+          "name": "Apply — Salaried",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"loanAmount\": 1000000,\n  \"loanTenure\": 60,\n  \"employmentType\": \"Salaried\",\n  \"vehicleType\": \"SUV\",\n  \"vehicleTypeOther\": \"\",\n  \"transmissionType\": \"Automatic\",\n  \"transmissionTypeOther\": \"\",\n  \"manufacturer\": \"Hyundai\",\n  \"model\": \"Creta\",\n  \"vehiclePurchaseType\": \"New Vehicle\",\n  \"vehiclePurchaseTypeOther\": \"\",\n  \"companyName\": \"ABC Corp\",\n  \"companyType\": \"Private Limited\",\n  \"companyTypeOther\": \"\",\n  \"monthlySalary\": 75000,\n  \"salaryReceivedAs\": \"Bank Transfer\",\n  \"salaryReceivedAsOther\": \"\",\n  \"salaryBankName\": \"HDFC Bank\",\n  \"salaryBankOther\": \"\",\n  \"fullName\": \"Rahul Sharma\",\n  \"mobile\": \"9876543210\",\n  \"email\": \"rahul@example.com\",\n  \"dob\": \"1992-06-15\",\n  \"panNumber\": \"ABCDE1234F\",\n  \"state\": \"Maharashtra\",\n  \"city\": \"Pune\",\n  \"pincode\": \"411001\",\n  \"residenceStatus\": \"Owned\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/car-loan/apply",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "car-loan",
+                "apply"
+              ]
+            },
+            "description": "Apply for Car Loan as Salaried."
+          }
+        },
+        {
+          "name": "Apply — Self Employed Business",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"loanAmount\": 1000000,\n  \"loanTenure\": 60,\n  \"employmentType\": \"Self Employed - Business\",\n  \"vehicleType\": \"SUV\",\n  \"vehicleTypeOther\": \"\",\n  \"transmissionType\": \"Automatic\",\n  \"transmissionTypeOther\": \"\",\n  \"manufacturer\": \"Hyundai\",\n  \"model\": \"Creta\",\n  \"vehiclePurchaseType\": \"New Vehicle\",\n  \"vehiclePurchaseTypeOther\": \"\",\n  \"businessType\": \"Proprietorship\",\n  \"businessTypeOther\": \"\",\n  \"businessName\": \"Aarav Traders\",\n  \"gstNumber\": \"\",\n  \"companyPanNumber\": \"ABCDE1234F\",\n  \"natureOfBusiness\": \"Retail\",\n  \"natureOfBusinessOther\": \"\",\n  \"industryType\": \"Trading\",\n  \"industryTypeOther\": \"\",\n  \"subIndustry\": \"\",\n  \"businessEstablishedDate\": \"2018-05-12\",\n  \"lastYearTurnover\": 2500000,\n  \"last2YearsTurnover\": 2300000,\n  \"lastYearNetIncome\": 350000,\n  \"last2YearsNetIncome\": 300000,\n  \"businessState\": \"Maharashtra\",\n  \"businessCity\": \"Pune\",\n  \"businessPincode\": \"411001\",\n  \"businessPincodeOther\": \"\",\n  \"businessPlaceStatus\": \"Owned\",\n  \"businessPlaceStatusOther\": \"\",\n  \"transactionBankOther\": \"\",\n  \"transactionBankName\": \"Multiple Transaction Banks\",\n  \"transactionBanks\": [\n    \"HDFC Bank\",\n    \"State Bank of India\",\n    \"ICICI Bank\"\n  ],\n  \"fullName\": \"Rahul Sharma\",\n  \"mobile\": \"9876543210\",\n  \"email\": \"rahul@example.com\",\n  \"dob\": \"1992-06-15\",\n  \"panNumber\": \"ABCDE1234F\",\n  \"state\": \"Maharashtra\",\n  \"city\": \"Pune\",\n  \"pincode\": \"411001\",\n  \"residenceStatus\": \"Owned\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/car-loan/apply",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "car-loan",
+                "apply"
+              ]
+            },
+            "description": "Apply for Car Loan as Self Employed - Business."
+          }
+        },
+        {
+          "name": "Apply — Self Employed Professional",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"loanAmount\": 1000000,\n  \"loanTenure\": 60,\n  \"employmentType\": \"Self Employed - Professional\",\n  \"vehicleType\": \"SUV\",\n  \"vehicleTypeOther\": \"\",\n  \"transmissionType\": \"Automatic\",\n  \"transmissionTypeOther\": \"\",\n  \"manufacturer\": \"Hyundai\",\n  \"model\": \"Creta\",\n  \"vehiclePurchaseType\": \"New Vehicle\",\n  \"vehiclePurchaseTypeOther\": \"\",\n  \"profession\": \"Doctor\",\n  \"professionOther\": \"\",\n  \"currentYearTurnover\": 500000,\n  \"priorYearTurnover\": 450000,\n  \"currentYearNetIncome\": 70000,\n  \"previousYearNetIncome\": 65000,\n  \"businessState\": \"Maharashtra\",\n  \"businessCity\": \"Pune\",\n  \"businessPincode\": \"411001\",\n  \"businessPincodeOther\": \"\",\n  \"businessPlaceStatus\": \"Owned\",\n  \"businessPlaceStatusOther\": \"\",\n  \"transactionBankOther\": \"\",\n  \"transactionBankName\": \"Multiple Transaction Banks\",\n  \"transactionBanks\": [\n    \"HDFC Bank\",\n    \"State Bank of India\",\n    \"ICICI Bank\"\n  ],\n  \"fullName\": \"Rahul Sharma\",\n  \"mobile\": \"9876543210\",\n  \"email\": \"rahul@example.com\",\n  \"dob\": \"1992-06-15\",\n  \"panNumber\": \"ABCDE1234F\",\n  \"state\": \"Maharashtra\",\n  \"city\": \"Pune\",\n  \"pincode\": \"411001\",\n  \"residenceStatus\": \"Owned\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/car-loan/apply",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "car-loan",
+                "apply"
+              ]
+            },
+            "description": "Apply for Car Loan as Self Employed - Professional."
+          }
+        },
+        {
+          "name": "Apply — Other type (Other + free text)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"loanAmount\": 1000000,\n  \"loanTenure\": 60,\n  \"employmentType\": \"Salaried\",\n  \"vehicleType\": \"Other\",\n  \"vehicleTypeOther\": \"Tractor\",\n  \"transmissionType\": \"Other\",\n  \"transmissionTypeOther\": \"CVT\",\n  \"manufacturer\": \"Hyundai\",\n  \"model\": \"Creta\",\n  \"vehiclePurchaseType\": \"Other\",\n  \"vehiclePurchaseTypeOther\": \"Lease\",\n  \"companyName\": \"ABC Corp\",\n  \"companyType\": \"Private Limited\",\n  \"companyTypeOther\": \"\",\n  \"monthlySalary\": 75000,\n  \"salaryReceivedAs\": \"Bank Transfer\",\n  \"salaryReceivedAsOther\": \"\",\n  \"salaryBankName\": \"HDFC Bank\",\n  \"salaryBankOther\": \"\",\n  \"fullName\": \"Rahul Sharma\",\n  \"mobile\": \"9876543210\",\n  \"email\": \"rahul@example.com\",\n  \"dob\": \"1992-06-15\",\n  \"panNumber\": \"ABCDE1234F\",\n  \"state\": \"Maharashtra\",\n  \"city\": \"Pune\",\n  \"pincode\": \"411001\",\n  \"residenceStatus\": \"Owned\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/car-loan/apply",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "car-loan",
+                "apply"
+              ]
+            },
+            "description": "Selects \"Other\" in the requirement dropdown and sends the free-text partner field."
+          }
+        },
+        {
+          "name": "Apply — Multiple transaction banks (object form)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"loanAmount\": 1000000,\n  \"loanTenure\": 60,\n  \"employmentType\": \"Salaried\",\n  \"vehicleType\": \"SUV\",\n  \"vehicleTypeOther\": \"\",\n  \"transmissionType\": \"Automatic\",\n  \"transmissionTypeOther\": \"\",\n  \"manufacturer\": \"Hyundai\",\n  \"model\": \"Creta\",\n  \"vehiclePurchaseType\": \"New Vehicle\",\n  \"vehiclePurchaseTypeOther\": \"\",\n  \"companyName\": \"ABC Corp\",\n  \"companyType\": \"Private Limited\",\n  \"companyTypeOther\": \"\",\n  \"monthlySalary\": 75000,\n  \"salaryReceivedAs\": \"Bank Transfer\",\n  \"salaryReceivedAsOther\": \"\",\n  \"salaryBankName\": \"HDFC Bank\",\n  \"salaryBankOther\": \"\",\n  \"fullName\": \"Rahul Sharma\",\n  \"mobile\": \"9876543210\",\n  \"email\": \"rahul@example.com\",\n  \"dob\": \"1992-06-15\",\n  \"panNumber\": \"ABCDE1234F\",\n  \"state\": \"Maharashtra\",\n  \"city\": \"Pune\",\n  \"pincode\": \"411001\",\n  \"residenceStatus\": \"Owned\",\n  \"transactionBankName\": {\n    \"displayName\": \"Multiple Transaction Banks\",\n    \"banks\": [\n      \"HDFC Bank\",\n      \"State Bank of India\",\n      \"ICICI Bank\"\n    ]\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/car-loan/apply",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "car-loan",
+                "apply"
+              ]
+            },
+            "description": "Canonical multi-bank object form — same result as transactionBanks array."
+          }
+        },
+        {
+          "name": "My Applications (list)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/car-loan/applications",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "car-loan",
+                "applications"
+              ]
+            },
+            "description": "All Car Loan applications of the logged-in user."
+          }
+        },
+        {
+          "name": "Admin — All Applications",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/car-loans",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "car-loans"
+              ]
+            },
+            "description": "Admin list for Car Loan."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Education Loan",
+      "item": [
+        {
+          "name": "Apply — Salaried",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"loanAmount\": 1000000,\n  \"loanTenure\": 60,\n  \"employmentType\": \"Salaried\",\n  \"educationCountry\": \"Canada\",\n  \"educationCountryOther\": \"\",\n  \"fieldOfStudy\": \"Computer Science / IT\",\n  \"fieldOfStudyOther\": \"\",\n  \"courseName\": \"B.Tech Computer Science\",\n  \"university\": \"University of Toronto\",\n  \"instituteName\": \"Faculty of Applied Science\",\n  \"enrollmentStatus\": \"Admission Confirmed\",\n  \"enrollmentStatusOther\": \"\",\n  \"courseDuration\": 4,\n  \"educationCost\": 45,\n  \"companyName\": \"ABC Corp\",\n  \"companyType\": \"Private Limited\",\n  \"companyTypeOther\": \"\",\n  \"monthlySalary\": 75000,\n  \"salaryReceivedAs\": \"Bank Transfer\",\n  \"salaryReceivedAsOther\": \"\",\n  \"salaryBankName\": \"HDFC Bank\",\n  \"salaryBankOther\": \"\",\n  \"fullName\": \"Rahul Sharma\",\n  \"mobile\": \"9876543210\",\n  \"email\": \"rahul@example.com\",\n  \"dob\": \"1992-06-15\",\n  \"panNumber\": \"ABCDE1234F\",\n  \"state\": \"Maharashtra\",\n  \"city\": \"Pune\",\n  \"pincode\": \"411001\",\n  \"residenceStatus\": \"Owned\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/education-loan/apply",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "education-loan",
+                "apply"
+              ]
+            },
+            "description": "Apply for Education Loan as Salaried."
+          }
+        },
+        {
+          "name": "Apply — Self Employed Business",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"loanAmount\": 1000000,\n  \"loanTenure\": 60,\n  \"employmentType\": \"Self Employed - Business\",\n  \"educationCountry\": \"Canada\",\n  \"educationCountryOther\": \"\",\n  \"fieldOfStudy\": \"Computer Science / IT\",\n  \"fieldOfStudyOther\": \"\",\n  \"courseName\": \"B.Tech Computer Science\",\n  \"university\": \"University of Toronto\",\n  \"instituteName\": \"Faculty of Applied Science\",\n  \"enrollmentStatus\": \"Admission Confirmed\",\n  \"enrollmentStatusOther\": \"\",\n  \"courseDuration\": 4,\n  \"educationCost\": 45,\n  \"businessType\": \"Proprietorship\",\n  \"businessTypeOther\": \"\",\n  \"businessName\": \"Aarav Traders\",\n  \"gstNumber\": \"\",\n  \"companyPanNumber\": \"ABCDE1234F\",\n  \"natureOfBusiness\": \"Retail\",\n  \"natureOfBusinessOther\": \"\",\n  \"industryType\": \"Trading\",\n  \"industryTypeOther\": \"\",\n  \"subIndustry\": \"\",\n  \"businessEstablishedDate\": \"2018-05-12\",\n  \"lastYearTurnover\": 2500000,\n  \"last2YearsTurnover\": 2300000,\n  \"lastYearNetIncome\": 350000,\n  \"last2YearsNetIncome\": 300000,\n  \"businessState\": \"Maharashtra\",\n  \"businessCity\": \"Pune\",\n  \"businessPincode\": \"411001\",\n  \"businessPincodeOther\": \"\",\n  \"businessPlaceStatus\": \"Owned\",\n  \"businessPlaceStatusOther\": \"\",\n  \"transactionBankOther\": \"\",\n  \"transactionBankName\": \"Multiple Transaction Banks\",\n  \"transactionBanks\": [\n    \"HDFC Bank\",\n    \"State Bank of India\",\n    \"ICICI Bank\"\n  ],\n  \"fullName\": \"Rahul Sharma\",\n  \"mobile\": \"9876543210\",\n  \"email\": \"rahul@example.com\",\n  \"dob\": \"1992-06-15\",\n  \"panNumber\": \"ABCDE1234F\",\n  \"state\": \"Maharashtra\",\n  \"city\": \"Pune\",\n  \"pincode\": \"411001\",\n  \"residenceStatus\": \"Owned\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/education-loan/apply",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "education-loan",
+                "apply"
+              ]
+            },
+            "description": "Apply for Education Loan as Self Employed - Business."
+          }
+        },
+        {
+          "name": "Apply — Self Employed Professional",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"loanAmount\": 1000000,\n  \"loanTenure\": 60,\n  \"employmentType\": \"Self Employed - Professional\",\n  \"educationCountry\": \"Canada\",\n  \"educationCountryOther\": \"\",\n  \"fieldOfStudy\": \"Computer Science / IT\",\n  \"fieldOfStudyOther\": \"\",\n  \"courseName\": \"B.Tech Computer Science\",\n  \"university\": \"University of Toronto\",\n  \"instituteName\": \"Faculty of Applied Science\",\n  \"enrollmentStatus\": \"Admission Confirmed\",\n  \"enrollmentStatusOther\": \"\",\n  \"courseDuration\": 4,\n  \"educationCost\": 45,\n  \"profession\": \"Doctor\",\n  \"professionOther\": \"\",\n  \"currentYearTurnover\": 500000,\n  \"priorYearTurnover\": 450000,\n  \"currentYearNetIncome\": 70000,\n  \"previousYearNetIncome\": 65000,\n  \"businessState\": \"Maharashtra\",\n  \"businessCity\": \"Pune\",\n  \"businessPincode\": \"411001\",\n  \"businessPincodeOther\": \"\",\n  \"businessPlaceStatus\": \"Owned\",\n  \"businessPlaceStatusOther\": \"\",\n  \"transactionBankOther\": \"\",\n  \"transactionBankName\": \"Multiple Transaction Banks\",\n  \"transactionBanks\": [\n    \"HDFC Bank\",\n    \"State Bank of India\",\n    \"ICICI Bank\"\n  ],\n  \"fullName\": \"Rahul Sharma\",\n  \"mobile\": \"9876543210\",\n  \"email\": \"rahul@example.com\",\n  \"dob\": \"1992-06-15\",\n  \"panNumber\": \"ABCDE1234F\",\n  \"state\": \"Maharashtra\",\n  \"city\": \"Pune\",\n  \"pincode\": \"411001\",\n  \"residenceStatus\": \"Owned\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/education-loan/apply",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "education-loan",
+                "apply"
+              ]
+            },
+            "description": "Apply for Education Loan as Self Employed - Professional."
+          }
+        },
+        {
+          "name": "Apply — Other type (Other + free text)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"loanAmount\": 1000000,\n  \"loanTenure\": 60,\n  \"employmentType\": \"Salaried\",\n  \"educationCountry\": \"Other\",\n  \"educationCountryOther\": \"Italy\",\n  \"fieldOfStudy\": \"Other\",\n  \"fieldOfStudyOther\": \"Design\",\n  \"courseName\": \"B.Tech Computer Science\",\n  \"university\": \"University of Toronto\",\n  \"instituteName\": \"Faculty of Applied Science\",\n  \"enrollmentStatus\": \"Other\",\n  \"enrollmentStatusOther\": \"Offer Letter Received\",\n  \"courseDuration\": 4,\n  \"educationCost\": 45,\n  \"companyName\": \"ABC Corp\",\n  \"companyType\": \"Private Limited\",\n  \"companyTypeOther\": \"\",\n  \"monthlySalary\": 75000,\n  \"salaryReceivedAs\": \"Bank Transfer\",\n  \"salaryReceivedAsOther\": \"\",\n  \"salaryBankName\": \"HDFC Bank\",\n  \"salaryBankOther\": \"\",\n  \"fullName\": \"Rahul Sharma\",\n  \"mobile\": \"9876543210\",\n  \"email\": \"rahul@example.com\",\n  \"dob\": \"1992-06-15\",\n  \"panNumber\": \"ABCDE1234F\",\n  \"state\": \"Maharashtra\",\n  \"city\": \"Pune\",\n  \"pincode\": \"411001\",\n  \"residenceStatus\": \"Owned\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/education-loan/apply",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "education-loan",
+                "apply"
+              ]
+            },
+            "description": "Selects \"Other\" in the requirement dropdown and sends the free-text partner field."
+          }
+        },
+        {
+          "name": "Apply — Multiple transaction banks (object form)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"loanAmount\": 1000000,\n  \"loanTenure\": 60,\n  \"employmentType\": \"Salaried\",\n  \"educationCountry\": \"Canada\",\n  \"educationCountryOther\": \"\",\n  \"fieldOfStudy\": \"Computer Science / IT\",\n  \"fieldOfStudyOther\": \"\",\n  \"courseName\": \"B.Tech Computer Science\",\n  \"university\": \"University of Toronto\",\n  \"instituteName\": \"Faculty of Applied Science\",\n  \"enrollmentStatus\": \"Admission Confirmed\",\n  \"enrollmentStatusOther\": \"\",\n  \"courseDuration\": 4,\n  \"educationCost\": 45,\n  \"companyName\": \"ABC Corp\",\n  \"companyType\": \"Private Limited\",\n  \"companyTypeOther\": \"\",\n  \"monthlySalary\": 75000,\n  \"salaryReceivedAs\": \"Bank Transfer\",\n  \"salaryReceivedAsOther\": \"\",\n  \"salaryBankName\": \"HDFC Bank\",\n  \"salaryBankOther\": \"\",\n  \"fullName\": \"Rahul Sharma\",\n  \"mobile\": \"9876543210\",\n  \"email\": \"rahul@example.com\",\n  \"dob\": \"1992-06-15\",\n  \"panNumber\": \"ABCDE1234F\",\n  \"state\": \"Maharashtra\",\n  \"city\": \"Pune\",\n  \"pincode\": \"411001\",\n  \"residenceStatus\": \"Owned\",\n  \"transactionBankName\": {\n    \"displayName\": \"Multiple Transaction Banks\",\n    \"banks\": [\n      \"HDFC Bank\",\n      \"State Bank of India\",\n      \"ICICI Bank\"\n    ]\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/education-loan/apply",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "education-loan",
+                "apply"
+              ]
+            },
+            "description": "Canonical multi-bank object form — same result as transactionBanks array."
+          }
+        },
+        {
+          "name": "My Applications (list)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/education-loan/applications",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "education-loan",
+                "applications"
+              ]
+            },
+            "description": "All Education Loan applications of the logged-in user."
+          }
+        },
+        {
+          "name": "Admin — All Applications",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/education-loans",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "education-loans"
+              ]
+            },
+            "description": "Admin list for Education Loan."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Credit Card",
+      "item": [
+        {
+          "name": "Apply — Salaried",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employmentType\": \"Salaried\",\n  \"hasActiveCard\": \"Yes\",\n  \"applyForBank\": \"HDFC\",\n  \"applyForBankOther\": \"\",\n  \"companyName\": \"ABC Corp\",\n  \"companyType\": \"Private Limited\",\n  \"companyTypeOther\": \"\",\n  \"monthlySalary\": 75000,\n  \"salaryReceivedAs\": \"Bank Transfer\",\n  \"salaryReceivedAsOther\": \"\",\n  \"salaryBankName\": \"HDFC Bank\",\n  \"salaryBankOther\": \"\",\n  \"fullName\": \"Rahul Sharma\",\n  \"mobile\": \"9876543210\",\n  \"email\": \"rahul@example.com\",\n  \"dob\": \"1992-06-15\",\n  \"panNumber\": \"ABCDE1234F\",\n  \"state\": \"Maharashtra\",\n  \"city\": \"Pune\",\n  \"pincode\": \"411001\",\n  \"residenceStatus\": \"Owned\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/credit-card/apply",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "credit-card",
+                "apply"
+              ]
+            },
+            "description": "Apply for Credit Card as Salaried."
+          }
+        },
+        {
+          "name": "Apply — Self Employed Business",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employmentType\": \"Self Employed - Business\",\n  \"hasActiveCard\": \"Yes\",\n  \"applyForBank\": \"HDFC\",\n  \"applyForBankOther\": \"\",\n  \"businessType\": \"Proprietorship\",\n  \"businessTypeOther\": \"\",\n  \"businessName\": \"Aarav Traders\",\n  \"gstNumber\": \"\",\n  \"companyPanNumber\": \"ABCDE1234F\",\n  \"natureOfBusiness\": \"Retail\",\n  \"natureOfBusinessOther\": \"\",\n  \"industryType\": \"Trading\",\n  \"industryTypeOther\": \"\",\n  \"subIndustry\": \"\",\n  \"businessEstablishedDate\": \"2018-05-12\",\n  \"lastYearTurnover\": 2500000,\n  \"last2YearsTurnover\": 2300000,\n  \"lastYearNetIncome\": 350000,\n  \"last2YearsNetIncome\": 300000,\n  \"businessState\": \"Maharashtra\",\n  \"businessCity\": \"Pune\",\n  \"businessPincode\": \"411001\",\n  \"businessPincodeOther\": \"\",\n  \"businessPlaceStatus\": \"Owned\",\n  \"businessPlaceStatusOther\": \"\",\n  \"transactionBankOther\": \"\",\n  \"transactionBankName\": \"Multiple Transaction Banks\",\n  \"transactionBanks\": [\n    \"HDFC Bank\",\n    \"State Bank of India\",\n    \"ICICI Bank\"\n  ],\n  \"fullName\": \"Rahul Sharma\",\n  \"mobile\": \"9876543210\",\n  \"email\": \"rahul@example.com\",\n  \"dob\": \"1992-06-15\",\n  \"panNumber\": \"ABCDE1234F\",\n  \"state\": \"Maharashtra\",\n  \"city\": \"Pune\",\n  \"pincode\": \"411001\",\n  \"residenceStatus\": \"Owned\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/credit-card/apply",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "credit-card",
+                "apply"
+              ]
+            },
+            "description": "Apply for Credit Card as Self Employed - Business."
+          }
+        },
+        {
+          "name": "Apply — Self Employed Professional",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employmentType\": \"Self Employed - Professional\",\n  \"hasActiveCard\": \"Yes\",\n  \"applyForBank\": \"HDFC\",\n  \"applyForBankOther\": \"\",\n  \"profession\": \"Doctor\",\n  \"professionOther\": \"\",\n  \"currentYearTurnover\": 500000,\n  \"priorYearTurnover\": 450000,\n  \"currentYearNetIncome\": 70000,\n  \"previousYearNetIncome\": 65000,\n  \"businessState\": \"Maharashtra\",\n  \"businessCity\": \"Pune\",\n  \"businessPincode\": \"411001\",\n  \"businessPincodeOther\": \"\",\n  \"businessPlaceStatus\": \"Owned\",\n  \"businessPlaceStatusOther\": \"\",\n  \"transactionBankOther\": \"\",\n  \"transactionBankName\": \"Multiple Transaction Banks\",\n  \"transactionBanks\": [\n    \"HDFC Bank\",\n    \"State Bank of India\",\n    \"ICICI Bank\"\n  ],\n  \"fullName\": \"Rahul Sharma\",\n  \"mobile\": \"9876543210\",\n  \"email\": \"rahul@example.com\",\n  \"dob\": \"1992-06-15\",\n  \"panNumber\": \"ABCDE1234F\",\n  \"state\": \"Maharashtra\",\n  \"city\": \"Pune\",\n  \"pincode\": \"411001\",\n  \"residenceStatus\": \"Owned\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/credit-card/apply",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "credit-card",
+                "apply"
+              ]
+            },
+            "description": "Apply for Credit Card as Self Employed - Professional."
+          }
+        },
+        {
+          "name": "Apply — Other type (Other + free text)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employmentType\": \"Salaried\",\n  \"hasActiveCard\": \"Yes\",\n  \"applyForBank\": \"Other\",\n  \"applyForBankOther\": \"IDFC First\",\n  \"companyName\": \"ABC Corp\",\n  \"companyType\": \"Private Limited\",\n  \"companyTypeOther\": \"\",\n  \"monthlySalary\": 75000,\n  \"salaryReceivedAs\": \"Bank Transfer\",\n  \"salaryReceivedAsOther\": \"\",\n  \"salaryBankName\": \"HDFC Bank\",\n  \"salaryBankOther\": \"\",\n  \"fullName\": \"Rahul Sharma\",\n  \"mobile\": \"9876543210\",\n  \"email\": \"rahul@example.com\",\n  \"dob\": \"1992-06-15\",\n  \"panNumber\": \"ABCDE1234F\",\n  \"state\": \"Maharashtra\",\n  \"city\": \"Pune\",\n  \"pincode\": \"411001\",\n  \"residenceStatus\": \"Owned\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/credit-card/apply",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "credit-card",
+                "apply"
+              ]
+            },
+            "description": "Selects \"Other\" in the requirement dropdown and sends the free-text partner field."
+          }
+        },
+        {
+          "name": "Apply — Multiple transaction banks (object form)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employmentType\": \"Salaried\",\n  \"hasActiveCard\": \"Yes\",\n  \"applyForBank\": \"HDFC\",\n  \"applyForBankOther\": \"\",\n  \"companyName\": \"ABC Corp\",\n  \"companyType\": \"Private Limited\",\n  \"companyTypeOther\": \"\",\n  \"monthlySalary\": 75000,\n  \"salaryReceivedAs\": \"Bank Transfer\",\n  \"salaryReceivedAsOther\": \"\",\n  \"salaryBankName\": \"HDFC Bank\",\n  \"salaryBankOther\": \"\",\n  \"fullName\": \"Rahul Sharma\",\n  \"mobile\": \"9876543210\",\n  \"email\": \"rahul@example.com\",\n  \"dob\": \"1992-06-15\",\n  \"panNumber\": \"ABCDE1234F\",\n  \"state\": \"Maharashtra\",\n  \"city\": \"Pune\",\n  \"pincode\": \"411001\",\n  \"residenceStatus\": \"Owned\",\n  \"transactionBankName\": {\n    \"displayName\": \"Multiple Transaction Banks\",\n    \"banks\": [\n      \"HDFC Bank\",\n      \"State Bank of India\",\n      \"ICICI Bank\"\n    ]\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/credit-card/apply",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "credit-card",
+                "apply"
+              ]
+            },
+            "description": "Canonical multi-bank object form — same result as transactionBanks array."
+          }
+        },
+        {
+          "name": "My Applications (list)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/credit-card/applications",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "credit-card",
+                "applications"
+              ]
+            },
+            "description": "All Credit Card applications of the logged-in user."
+          }
+        },
+        {
+          "name": "Admin — All Applications",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/credit-cards",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "credit-cards"
+              ]
+            },
+            "description": "Admin list for Credit Card."
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "userToken",
+      "value": ""
+    },
+    {
+      "key": "adminToken",
+      "value": ""
+    }
+  ]
+}

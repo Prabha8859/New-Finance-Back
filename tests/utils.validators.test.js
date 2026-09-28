@@ -1,4 +1,4 @@
-const { isValidEmail, isStrongPassword } = require("../utils/validators");
+const { isValidEmail, isStrongPassword } = require("../src/shared/utils/validators");
 
 describe("utils/validators", () => {
   describe("isValidEmail", () => {

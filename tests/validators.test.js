@@ -1,19 +1,29 @@
-const { registerValidator } = require("../middleware/validators/authValidators");
-const { applyValidator } = require("../middleware/validators/personalLoanValidators");
-const { normalizeTransactionBankNames, sanitizeBusinessLoanResponse } = require("../controllers/businessLoan.controller");
-const homeLoanController = require("../controllers/homeLoan.controller");
-const personalLoanController = require("../controllers/personalLoan.controller");
-const { normalizeApplyPayload } = require("../utils/normalizeLoanPayload");
-const { appendUniqueValue } = require("../services/admin/master.service");
-const PersonalLoan = require("../models/PersonalLoan");
-const LoanAgainstProperty = require("../models/LoanAgainstProperty");
-const LoanAgainstPropertyController = require("../controllers/loanAgainstProperty.controller");
-const BusinessLoan = require("../models/BusinessLoan");
-const HomeLoan = require("../models/HomeLoan");
-const { businessIncomeFields } = require("../models/schemas/loanSections");
-const businessApplicationController = require("../controllers/admin/application.controller");
+const { registerValidator } = require("../src/modules/auth/auth.validators");
+const { applyValidator } = require("../src/modules/loans/validators/personalLoan.validators");
+const { normalizeTransactionBankNames, sanitizeBusinessLoanResponse } = require("../src/modules/loans/controllers/businessLoan.controller");
+const homeLoanController = require("../src/modules/loans/controllers/homeLoan.controller");
+const personalLoanController = require("../src/modules/loans/controllers/personalLoan.controller");
+const { normalizeApplyPayload } = require("../src/shared/utils/normalizeLoanPayload");
+const { appendUniqueValue } = require("../src/modules/masters/master.service");
+const PersonalLoan = require("../src/modules/loans/models/personalLoan.model");
+const LoanAgainstProperty = require("../src/modules/loans/models/loanAgainstProperty.model");
+const LoanAgainstPropertyController = require("../src/modules/loans/controllers/loanAgainstProperty.controller");
+const BusinessLoan = require("../src/modules/loans/models/businessLoan.model");
+const HomeLoan = require("../src/modules/loans/models/homeLoan.model");
+const { businessIncomeFields } = require("../src/modules/loans/schema");
+const businessApplicationController = require("../src/modules/admin/application.controller");
+const BalanceTransfer = require("../src/modules/loans/models/balanceTransfer.model");
+const { applyValidator: balanceTransferApplyValidator } = require("../src/modules/loans/validators/balanceTransfer.validators");
+const ProjectLoan = require("../src/modules/loans/models/projectLoan.model");
+const { applyValidator: projectLoanApplyValidator } = require("../src/modules/loans/validators/projectLoan.validators");
+const CarLoan = require("../src/modules/loans/models/carLoan.model");
+const { applyValidator: carLoanApplyValidator } = require("../src/modules/loans/validators/carLoan.validators");
+const EducationLoan = require("../src/modules/loans/models/educationLoan.model");
+const { applyValidator: educationLoanApplyValidator } = require("../src/modules/loans/validators/educationLoan.validators");
+const CreditCard = require("../src/modules/loans/models/creditCard.model");
+const { applyValidator: creditCardApplyValidator } = require("../src/modules/loans/validators/creditCard.validators");
 
-jest.mock("../models/BusinessLoan", () => ({
+jest.mock("../src/modules/loans/models/businessLoan.model", () => ({
   find: jest.fn(),
   findById: jest.fn(),
 }));
@@ -392,7 +402,7 @@ describe("homeLoanController.apply (Self Employed - Business)", () => {
 });
 
 describe("homeLoanValidators.applyValidator (Self Employed - Business)", () => {
-  const { applyValidator: homeApplyValidator } = require("../middleware/validators/homeLoanValidators");
+  const { applyValidator: homeApplyValidator } = require("../src/modules/loans/validators/homeLoan.validators");
 
   const businessPayload = {
     loanAmount: 1800000,
@@ -529,8 +539,8 @@ describe("normalizeLoanPayload.normalizeApplyPayload", () => {
 });
 
 describe("applyValidator (dashboard quick-form payloads)", () => {
-  const { applyValidator: homeApplyValidator } = require("../middleware/validators/homeLoanValidators");
-  const { applyValidator: businessApplyValidator } = require("../middleware/validators/businessLoanValidators");
+  const { applyValidator: homeApplyValidator } = require("../src/modules/loans/validators/homeLoan.validators");
+  const { applyValidator: businessApplyValidator } = require("../src/modules/loans/validators/businessLoan.validators");
 
   it("home loan: accepts a business payload without buying-property fields", async () => {
     const result = await runChain(homeApplyValidator, dashboardBusinessPayload());
@@ -633,8 +643,8 @@ describe("personalLoanController.apply (dashboard contract)", () => {
 });
 
 describe("salaried salary-bank rules (dashboard Cash case)", () => {
-  const { applyValidator: homeApplyValidator } = require("../middleware/validators/homeLoanValidators");
-  const { salaryBankName } = require("../models/schemas/loanSections").employmentIncomeFields;
+  const { applyValidator: homeApplyValidator } = require("../src/modules/loans/validators/homeLoan.validators");
+  const { salaryBankName } = require("../src/modules/loans/schema").employmentIncomeFields;
 
   const salariedPayload = (overrides = {}) => ({
     loanAmount: 1500000,
@@ -709,7 +719,7 @@ const lapPayload = (overrides = {}) => ({
 });
 
 describe("loanAgainstPropertyValidators.applyValidator", () => {
-  const { applyValidator: lapApplyValidator } = require("../middleware/validators/loanAgainstPropertyValidators");
+  const { applyValidator: lapApplyValidator } = require("../src/modules/loans/validators/loanAgainstProperty.validators");
 
   it("passes a complete self-employed business payload", async () => {
     const result = await runChain(lapApplyValidator, lapPayload());
@@ -829,5 +839,287 @@ describe("adminApplicationController.listLoanAgainstProperties", () => {
     expect(payload.data[0].collateralPropertyState).toBe("Maharashtra");
     expect(payload.data[0]).not.toHaveProperty("profession");
     expect(payload.data[0]).not.toHaveProperty("currentYearTurnover");
+  });
+});
+
+describe("balanceTransfer (Transfer Requirements)", () => {
+  const balanceTransferPayload = (overrides = {}) => ({
+    loanAmount: 1000000,
+    loanTenure: 120,
+    balanceTransferType: "Home loan",
+    currentPropertyValue: 5000000,
+    topUpAmount: 200000,
+    employmentType: "Salaried",
+    companyName: "ABC Corp",
+    companyType: "Private Limited",
+    monthlySalary: 75000,
+    salaryReceivedAs: "Bank Transfer",
+    salaryBankName: "HDFC Bank",
+    fullName: "Rohit Sharma",
+    mobile: "9876543210",
+    email: "rohit@example.com",
+    dob: "1992-06-15",
+    panNumber: "ABCDE1234F",
+    state: "Maharashtra",
+    city: "Pune",
+    pincode: "411001",
+    residenceStatus: "Owned",
+    ...overrides,
+  });
+
+  it("passes a complete salaried transfer payload", async () => {
+    const result = await runChain(balanceTransferApplyValidator, balanceTransferPayload());
+    expect(result.passed).toBe(true);
+  });
+
+  it("rejects a payload without the type of balance transfer", async () => {
+    const result = await runChain(balanceTransferApplyValidator, balanceTransferPayload({ balanceTransferType: "" }));
+    expect(result.passed).toBe(false);
+  });
+
+  it("validates a complete application against the model", () => {
+    const doc = new BalanceTransfer({ user: "64f000000000000000000001", ...balanceTransferPayload() });
+    expect(doc.validateSync()).toBeUndefined();
+  });
+
+  it("requires the type of balance transfer in the model", () => {
+    const doc = new BalanceTransfer({
+      user: "64f000000000000000000001",
+      ...balanceTransferPayload({ balanceTransferType: undefined }),
+    });
+    const error = doc.validateSync();
+    expect(error).toBeDefined();
+    expect(Object.keys(error.errors)).toContain("balanceTransferType");
+  });
+});
+
+describe("projectLoan (Loan Requirements)", () => {
+  const projectLoanPayload = (overrides = {}) => ({
+    loanAmount: 5000000,
+    loanTenure: 120,
+    projectType: "Construction Project",
+    totalProjectCost: 10000000,
+    projectStartDate: "2026-01-15",
+    projectCompletionDate: "2028-06-30",
+    ownInvestment: 2000000,
+    employmentType: "Salaried",
+    companyName: "ABC Corp",
+    companyType: "Private Limited",
+    monthlySalary: 75000,
+    salaryReceivedAs: "Bank Transfer",
+    salaryBankName: "HDFC Bank",
+    fullName: "Rohit Sharma",
+    mobile: "9876543210",
+    email: "rohit@example.com",
+    dob: "1992-06-15",
+    panNumber: "ABCDE1234F",
+    state: "Maharashtra",
+    city: "Pune",
+    pincode: "411001",
+    residenceStatus: "Owned",
+    ...overrides,
+  });
+
+  it("passes a complete salaried project payload", async () => {
+    const result = await runChain(projectLoanApplyValidator, projectLoanPayload());
+    expect(result.passed).toBe(true);
+  });
+
+  it("rejects a payload without the project type", async () => {
+    const result = await runChain(projectLoanApplyValidator, projectLoanPayload({ projectType: "" }));
+    expect(result.passed).toBe(false);
+  });
+
+  it("validates a complete application against the model", () => {
+    const doc = new ProjectLoan({ user: "64f000000000000000000001", ...projectLoanPayload() });
+    expect(doc.validateSync()).toBeUndefined();
+  });
+
+  it("requires the project type in the model", () => {
+    const doc = new ProjectLoan({
+      user: "64f000000000000000000001",
+      ...projectLoanPayload({ projectType: undefined }),
+    });
+    const error = doc.validateSync();
+    expect(error).toBeDefined();
+    expect(Object.keys(error.errors)).toContain("projectType");
+  });
+});
+
+describe("carLoan (Loan Requirements)", () => {
+  const carLoanPayload = (overrides = {}) => ({
+    loanAmount: 800000,
+    loanTenure: 84,
+    vehicleType: "SUV",
+    transmissionType: "Automatic",
+    manufacturer: "Hyundai",
+    model: "Creta",
+    vehiclePurchaseType: "New Vehicle",
+    employmentType: "Salaried",
+    companyName: "ABC Corp",
+    companyType: "Private Limited",
+    monthlySalary: 75000,
+    salaryReceivedAs: "Bank Transfer",
+    salaryBankName: "HDFC Bank",
+    fullName: "Rohit Sharma",
+    mobile: "9876543210",
+    email: "rohit@example.com",
+    dob: "1992-06-15",
+    panNumber: "ABCDE1234F",
+    state: "Maharashtra",
+    city: "Pune",
+    pincode: "411001",
+    residenceStatus: "Owned",
+    ...overrides,
+  });
+
+  it("passes a complete salaried car payload", async () => {
+    const result = await runChain(carLoanApplyValidator, carLoanPayload());
+    expect(result.passed).toBe(true);
+  });
+
+  it("passes with only loanAmount + tenure (vehicle fields are optional)", async () => {
+    const result = await runChain(
+      carLoanApplyValidator,
+      carLoanPayload({
+        vehicleType: undefined,
+        transmissionType: undefined,
+        manufacturer: undefined,
+        model: undefined,
+        vehiclePurchaseType: undefined,
+      })
+    );
+    expect(result.passed).toBe(true);
+  });
+
+  it("requires the free-text partner when vehicleType is Other", async () => {
+    const result = await runChain(
+      carLoanApplyValidator,
+      carLoanPayload({ vehicleType: "Other", vehicleTypeOther: "" })
+    );
+    expect(result.passed).toBe(false);
+  });
+
+  it("validates a complete application against the model", () => {
+    const doc = new CarLoan({ user: "64f000000000000000000001", ...carLoanPayload() });
+    expect(doc.validateSync()).toBeUndefined();
+  });
+});
+
+describe("educationLoan (Loan Requirements)", () => {
+  const educationLoanPayload = (overrides = {}) => ({
+    loanAmount: 1500000,
+    loanTenure: 120,
+    educationCountry: "Canada",
+    fieldOfStudy: "Computer Science / IT",
+    courseName: "B.Tech Computer Science",
+    university: "University of Toronto",
+    instituteName: "Faculty of Applied Science",
+    enrollmentStatus: "Admission Confirmed",
+    courseDuration: 4,
+    educationCost: 45,
+    employmentType: "Salaried",
+    companyName: "ABC Corp",
+    companyType: "Private Limited",
+    monthlySalary: 75000,
+    salaryReceivedAs: "Bank Transfer",
+    salaryBankName: "HDFC Bank",
+    fullName: "Rohit Sharma",
+    mobile: "9876543210",
+    email: "rohit@example.com",
+    dob: "1992-06-15",
+    panNumber: "ABCDE1234F",
+    state: "Maharashtra",
+    city: "Pune",
+    pincode: "411001",
+    residenceStatus: "Owned",
+    ...overrides,
+  });
+
+  it("passes a complete salaried education payload", async () => {
+    const result = await runChain(educationLoanApplyValidator, educationLoanPayload());
+    expect(result.passed).toBe(true);
+  });
+
+  it("rejects a payload without the course name", async () => {
+    const result = await runChain(educationLoanApplyValidator, educationLoanPayload({ courseName: "" }));
+    expect(result.passed).toBe(false);
+  });
+
+  it("requires the free-text partner when fieldOfStudy is Other", async () => {
+    const result = await runChain(
+      educationLoanApplyValidator,
+      educationLoanPayload({ fieldOfStudy: "Other", fieldOfStudyOther: "" })
+    );
+    expect(result.passed).toBe(false);
+  });
+
+  it("validates a complete application against the model", () => {
+    const doc = new EducationLoan({ user: "64f000000000000000000001", ...educationLoanPayload() });
+    expect(doc.validateSync()).toBeUndefined();
+  });
+
+  it("requires the education country in the model", () => {
+    const doc = new EducationLoan({
+      user: "64f000000000000000000001",
+      ...educationLoanPayload({ educationCountry: undefined }),
+    });
+    const error = doc.validateSync();
+    expect(error).toBeDefined();
+    expect(Object.keys(error.errors)).toContain("educationCountry");
+  });
+});
+
+describe("creditCard (Credit Card Details)", () => {
+  const creditCardPayload = (overrides = {}) => ({
+    hasActiveCard: "Yes",
+    applyForBank: "HDFC",
+    employmentType: "Salaried",
+    companyName: "ABC Corp",
+    companyType: "Private Limited",
+    monthlySalary: 75000,
+    salaryReceivedAs: "Bank Transfer",
+    salaryBankName: "HDFC Bank",
+    fullName: "Rohit Sharma",
+    mobile: "9876543210",
+    email: "rohit@example.com",
+    dob: "1992-06-15",
+    panNumber: "ABCDE1234F",
+    state: "Maharashtra",
+    city: "Pune",
+    pincode: "411001",
+    residenceStatus: "Owned",
+    ...overrides,
+  });
+
+  it("passes without loanAmount/loanTenure (credit card has none)", async () => {
+    const result = await runChain(creditCardApplyValidator, creditCardPayload());
+    expect(result.passed).toBe(true);
+  });
+
+  it("rejects an invalid hasActiveCard value", async () => {
+    const result = await runChain(creditCardApplyValidator, creditCardPayload({ hasActiveCard: "Maybe" }));
+    expect(result.passed).toBe(false);
+  });
+
+  it("requires the free-text partner when applyForBank is Other", async () => {
+    const result = await runChain(
+      creditCardApplyValidator,
+      creditCardPayload({ applyForBank: "Other", applyForBankOther: "" })
+    );
+    expect(result.passed).toBe(false);
+  });
+
+  it("validates a complete application against the model", () => {
+    const doc = new CreditCard({ user: "64f000000000000000000001", ...creditCardPayload() });
+    expect(doc.validateSync()).toBeUndefined();
+  });
+
+  it("does not require loanAmount or loanTenure in the model", () => {
+    const doc = new CreditCard({ user: "64f000000000000000000001", ...creditCardPayload() });
+    const error = doc.validateSync();
+    const fields = error ? Object.keys(error.errors) : [];
+    expect(fields).not.toContain("loanAmount");
+    expect(fields).not.toContain("loanTenure");
   });
 });
