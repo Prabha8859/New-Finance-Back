@@ -1,6 +1,6 @@
 const router = require("express").Router();
 
-const adminAuth = require("../../shared/middleware/adminAuth");
+const adminAuth = require("../../middleware/adminAuth.middleware");
 
 /*
 ========================================

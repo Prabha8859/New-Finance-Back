@@ -1,7 +1,7 @@
 const User = require("./user.model");
 const OTP = require("./otp.model");
-const generateToken = require("../../shared/utils/generateToken");
-const sendOTP = require("../../shared/utils/sendOTP");
+const generateToken = require("../../utils/generateToken");
+const sendOTP = require("../../utils/sendOTP");
 
 /*
 ==========================================

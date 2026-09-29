@@ -14,8 +14,8 @@ require("dotenv").config();
 const fs = require("fs");
 const path = require("path");
 
-const { LOAN_PRODUCTS } = require("../src/modules/loans/loanProducts");
-const schema = require("../src/modules/loans/schema");
+const { LOAN_PRODUCTS } = require("../src/modules/loans/shared/loanProducts");
+const schema = require("../src/modules/loans/shared/loanSchema");
 
 const BASE_URL = process.env.POSTMAN_BASE_URL || "http://localhost:5000";
 const OUT_DIR = path.join(__dirname, "..", "postman");
@@ -68,7 +68,6 @@ const businessIncome = {
   businessPincodeOther: "",
   businessPlaceStatus: "Owned",
   businessPlaceStatusOther: "",
-  transactionBankOther: "",
 };
 
 const professionalIncome = {
@@ -84,13 +83,19 @@ const professionalIncome = {
   businessPincodeOther: "",
   businessPlaceStatus: "Owned",
   businessPlaceStatusOther: "",
-  transactionBankOther: "",
 };
 
 const transactionBanks = {
   transactionBankName: "Multiple Transaction Banks",
   transactionBanks: ["HDFC Bank", "State Bank of India", "ICICI Bank"],
 };
+
+/*
+Send this only when the bank selector is on "Other" — the free-text fallback
+bank name. The server merges it into transactionBankName and never stores the
+Other field itself, so it stays out of the canonical payloads above.
+*/
+const transactionBankOtherSample = { transactionBankOther: "Yes Bank" };
 
 /** Product-specific requirement samples (schema field -> sample value). */
 const requirementSamples = {
@@ -102,6 +107,55 @@ const requirementSamples = {
     buyingPropertyCity: "Pune",
     buyingPropertyPincode: "411001",
     buyingPropertyPincodeOther: "",
+  },
+  commercialPurchase: {
+    buyingPropertyType: "Commercial",
+    buyingPropertyTypeOther: "",
+    buyingPropertyMarketValue: 6000000,
+    buyingPropertyAge: 3,
+    buyingPropertyState: "Maharashtra",
+    buyingPropertyCity: "Pune",
+    buyingPropertyPincode: "411001",
+    buyingPropertyPincodeOther: "",
+  },
+  loanAgainstShare: {
+    shareCompanyName: "Reliance Industries",
+    valueOfOneShare: 2500,
+    quantityOfShare: 500,
+    totalShareValue: 1250000,
+  },
+  filmFunding: {
+    filmComesUnder: "Bollywood",
+    filmComesUnderOther: "",
+    filmLanguages: ["Hindi", "English"],
+    starCastNames: ["Aamir Khan", "Alia Bhatt"],
+    totalProjectCost: 20000000,
+    ownInvestmentAmount: 5000000,
+  },
+  npaLoan: {
+    npaStatus: "1-6 Months",
+    npaStatusOther: "",
+    npaPrincipalLoanAmount: 2000000,
+    npaCurrentOutstandingAmount: 2500000,
+  },
+  goldLoan: {
+    typeOfLoan: "Jewellery",
+    typeOfLoanOther: "",
+    goldCarats: "22 Karat",
+    goldCaratsOther: "",
+    goldWeight: 20,
+    collateralPropertyMarketValue: 500000,
+  },
+  leaseRentalDiscounting: {
+    monthlyLeaseIncome: 80000,
+    totalLeaseAmount: 9600000,
+    leasePropertyDuration: 10,
+    leasePropertyMarketValue: 6000000,
+    leasePropertyAge: 5,
+    leasePropertyState: "Maharashtra",
+    leasePropertyCity: "Pune",
+    leasePropertyPincode: "411001",
+    leasePropertyPincodeOther: "",
   },
   collateralProperty: {
     collateralPropertyType: "Residential Plot",
@@ -127,7 +181,7 @@ const requirementSamples = {
     projectCompletionDate: "2028-06-30",
     ownInvestment: 2000000,
   },
-  carLoan: {
+  vehicleLoan: {
     vehicleType: "SUV",
     vehicleTypeOther: "",
     transmissionType: "Automatic",
@@ -159,10 +213,23 @@ const requirementSamples = {
 
 const requirementOtherSamples = {
   buyingProperty: {},
+  commercialPurchase: {},
+  leaseRentalDiscounting: {},
+  loanAgainstShare: {},
+  filmFunding: {
+    filmComesUnderOther: "Kannada Industry",
+  },
+  npaLoan: {
+    npaStatusOther: "Suit Filed",
+  },
+  goldLoan: {
+    typeOfLoanOther: "Utensils",
+    goldCaratsOther: "14 Karat",
+  },
   collateralProperty: {},
   balanceTransfer: {},
   projectLoan: {},
-  carLoan: {
+  vehicleLoan: {
     vehicleTypeOther: "Tractor",
     transmissionTypeOther: "CVT",
     vehiclePurchaseTypeOther: "Lease",
@@ -299,14 +366,15 @@ Object.values(LOAN_PRODUCTS).forEach((config) => {
     );
 
     // Field coverage check: every expected field present in the body?
-    // (transactionBankDisplayName is excluded — the server deletes it on save.)
+    // (transactionBankDisplayName is a server-managed helper and
+    //  transactionBankOther a request-only fallback — both are excluded.)
     const expected = [
       ...(config.loanAmountRequired !== false ? ["loanAmount"] : []),
       ...(config.loanTenureRequired !== false ? ["loanTenure"] : []),
       ...(schema.loanRequirementFieldNames[config.loanRequirements] || []),
       ...schema.incomeFieldNamesForEmploymentType(employmentType),
       ...schema.PERSONAL_DETAILS_FIELD_NAMES,
-    ].filter((field) => field !== "transactionBankDisplayName");
+    ].filter((field) => field !== "transactionBankDisplayName" && field !== "transactionBankOther");
     const body = buildApplyBody(config, employmentType);
     const missing = expected.filter((field) => body[field] === undefined);
     coverage.push({
@@ -348,6 +416,21 @@ Object.values(LOAN_PRODUCTS).forEach((config) => {
         "Canonical multi-bank object form — same result as transactionBanks array."
       )
     );
+
+    folder.item.push(
+      requestItem(
+        "Apply — Other transaction bank (free-text fallback)",
+        "POST",
+        `${config.route}/apply`,
+        {
+          ...multiBankBody,
+          transactionBankName: "Other",
+          transactionBanks: undefined,
+          ...transactionBankOtherSample,
+        },
+        'Bank selector on "Other": send transactionBankOther — the server merges it into transactionBankName.'
+      )
+    );
   }
 
   folder.item.push(
@@ -371,10 +454,18 @@ function adminSlug(config) {
     "/api/personal-loan": "personal-loans",
     "/api/business-loan": "business-loans",
     "/api/home-loan": "home-loans",
+    "/api/commercial-purchase": "commercial-purchases",
+    "/api/working-capital": "working-capitals",
+    "/api/od-cc-limit": "od-cc-limits",
+    "/api/loan-against-share": "loan-against-shares",
+    "/api/film-funding": "film-fundings",
+    "/api/npa-loan": "npa-loans",
+    "/api/gold-loan": "gold-loans",
+    "/api/lease-rental-discounting": "lease-rental-discountings",
     "/api/loan-against-property": "loan-against-properties",
     "/api/balance-transfer": "balance-transfers",
     "/api/project-loan": "project-loans",
-    "/api/car-loan": "car-loans",
+    "/api/vehicle-loan": "vehicle-loans",
     "/api/education-loan": "education-loans",
     "/api/credit-card": "credit-cards",
   };
@@ -386,7 +477,7 @@ const collection = {
     name: "Indexia Finance — Loans API",
     _postman_id: "indexia-loans-api-001",
     description:
-      "All loan products (Personal, Business, Home, LAP, Balance Transfer, Project Loan, Car Loan) with apply/list + admin endpoints. Set baseUrl, then run the Auth folder first — it saves {{userToken}} / {{adminToken}} automatically.",
+      "All loan products (Personal, Business, Home, LAP, Balance Transfer, Project Loan, Vehicle Loan) with apply/list + admin endpoints. Set baseUrl, then run the Auth folder first — it saves {{userToken}} / {{adminToken}} automatically.",
     schema: "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
   },
   item: [
@@ -477,6 +568,43 @@ const collection = {
             },
           ],
         },
+      ],
+    },
+    {
+      name: "Masters (dropdown data)",
+      item: [
+        adminRequest(
+          "Employment Types — per loan",
+          `/api/masters/employment-types/business`,
+          "Employment types allowed for a loanType: personal | business | home | lap."
+        ),
+        adminRequest("States", `/api/masters/states`, "All states for the dependent dropdowns."),
+        adminRequest(
+          "Cities of a State",
+          `/api/masters/cities?state=Maharashtra`,
+          "Cities for one state — feed it the selected state."
+        ),
+        adminRequest(
+          "Pincodes of a City",
+          `/api/masters/pincodes?state=Maharashtra&city=Pune`,
+          "Pincodes for a state+city pair (dependent lookup). Empty list = city has no seeded pincodes; the form falls back to the Other pincode input."
+        ),
+        adminRequest("Banks", `/api/masters/banks`, "Bank master for transaction/salary bank selectors."),
+        adminRequest(
+          "Professions",
+          `/api/masters/professions`,
+          "Profession list for Self Employed - Professional."
+        ),
+        adminRequest(
+          "Business Place Statuses",
+          `/api/masters/businessPlaceStatuses`,
+          "Status Of Business Place list for both self-employed types."
+        ),
+        adminRequest(
+          "All Masters (flat map)",
+          `/api/masters`,
+          "Every master as { type: values } — plus separate banks + locations views."
+        ),
       ],
     },
     ...productFolders,

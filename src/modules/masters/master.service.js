@@ -170,6 +170,59 @@ const normalizeTextValue = (value, label) => {
   return cleaned;
 };
 
+/*
+==========================================
+PINCodes
+
+The "pincodesByLocation" master (built by scripts/seedPincodes.js) is a grouped
+list keyed by `${slug(state)}::${slug(city)}` — the same slug format is used
+here so lookups always agree with the seed data. Cities with no seeded pincode
+list return [] and the form falls back to a plain "Other" pincode entry.
+==========================================
+*/
+const PINCODES_MASTER_TYPE = "pincodesByLocation";
+
+const locationSlug = (value) =>
+  String(value ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+const findPincodeGroupKey = (values, state, city) => {
+  const expectedKey = `${locationSlug(state)}::${locationSlug(city)}`;
+  const keys = Object.keys(values);
+
+  // Fast path: the seed keys are already lowercase slugs.
+  if (keys.includes(expectedKey)) return expectedKey;
+
+  // Fallback: match case-insensitively so hand-edited keys still resolve.
+  const expected = expectedKey.toLowerCase();
+  return keys.find((key) => key.toLowerCase() === expected);
+};
+
+/* All pincodes of one city under a state (dependent lookup: state -> city -> pincodes). */
+const getPincodesForCity = async (state, city) => {
+  const cleanState = normalizeTextValue(state, "State");
+  const cleanCity = normalizeTextValue(city, "City");
+
+  const master = await Master.findOne({ type: PINCODES_MASTER_TYPE });
+  if (!master || !isPlainObject(master.values)) return [];
+
+  const groupKey = findPincodeGroupKey(master.values, cleanState, cleanCity);
+  if (!groupKey) return [];
+
+  return normalizeList(master.values[groupKey], `Pincodes of ${cleanCity}`);
+};
+
+/* Every `${state}::${city}` location that has a seeded pincode list. */
+const listPincodeLocations = async () => {
+  const master = await Master.findOne({ type: PINCODES_MASTER_TYPE });
+  if (!master || !isPlainObject(master.values)) return [];
+
+  return Object.keys(master.values).sort();
+};
+
 const getCitiesByState = async (state) => {
   const cleanState = normalizeTextValue(state, "State");
   const master = await Master.findOne({ type: "citiesByState" });
@@ -431,10 +484,13 @@ const addCustomValue = async ({ type, value }) => {
   if (!master) {
     master = await Master.create({
       type: cleanType,
-      label: cleanType
-        .replace(/([a-z])([A-Z])/g, "$1 $2")
-        .replace(/[_-]+/g, " ")
-        .trim() || cleanType,
+      label:
+        cleanType === BANK_MASTER_TYPE
+          ? BANK_MASTER_LABEL
+          : cleanType
+              .replace(/([a-z])([A-Z])/g, "$1 $2")
+              .replace(/[_-]+/g, " ")
+              .trim() || cleanType,
       values: [cleanValue],
     });
 
@@ -449,6 +505,167 @@ const addCustomValue = async ({ type, value }) => {
   await master.save();
 
   return master;
+};
+
+/*
+==========================================
+BANKS
+
+Banks live in ONE master: type "banks", label "Banks". The bank APIs below
+never ask the admin for type/label, so there is nothing to mistype and no
+way to accidentally create a duplicate "Bank01" / "bank01" style master.
+
+Legacy masters whose type starts with "bank" (bank01, Bank01, bankLoan) are
+still READ so no bank name silently disappears from the dropdowns — they just
+should not be created any more. Delete them from the admin panel and the
+merged list becomes the "banks" master alone.
+==========================================
+*/
+const BANK_MASTER_TYPE = "banks";
+const BANK_MASTER_LABEL = "Banks";
+const BANK_TYPE_REGEX = /^bank/i;
+
+const isBankType = (type) => BANK_TYPE_REGEX.test(String(type ?? ""));
+
+const collectBankNames = (masters) => {
+  const seen = new Set();
+  const banks = [];
+
+  masters
+    .filter((master) => isBankType(master.type))
+    .forEach((master) => {
+      const values = Array.isArray(master.values) ? master.values : [];
+      values.forEach((value) => {
+        const name = String(value ?? "").trim();
+        if (!name) return;
+        const key = name.toLowerCase();
+        if (seen.has(key)) return;
+        seen.add(key);
+        banks.push(name);
+      });
+    });
+
+  return banks;
+};
+
+/* Every bank name the app knows about, de-duplicated. */
+const getBankNames = async () => {
+  const masters = await Master.find({ type: BANK_TYPE_REGEX });
+  return collectBankNames(masters);
+};
+
+/* The one canonical master every bank WRITE goes to (created on demand). */
+const getBankMaster = async () => {
+  let master = await Master.findOne({ type: BANK_MASTER_TYPE });
+
+  if (!master) {
+    master = await Master.create({
+      type: BANK_MASTER_TYPE,
+      label: BANK_MASTER_LABEL,
+      values: [],
+    });
+  }
+
+  return master;
+};
+
+/*
+Accepts any of these, so the admin UI can post whichever is handy:
+  ["HDFC Bank", "ICICI Bank"]
+  { "banks": [...] }
+  { "values": [...] }
+  { "value": "HDFC Bank" }
+Duplicates are dropped silently instead of being an error.
+==========================================
+*/
+const toBankNameList = (input) => {
+  if (input === undefined || input === null) return [];
+  if (Array.isArray(input)) return input;
+
+  if (typeof input === "object") {
+    const key = ["banks", "values", "names", "bank", "value"].find(
+      (candidate) => input[candidate] !== undefined
+    );
+    return key ? toBankNameList(input[key]) : [];
+  }
+
+  return [input];
+};
+
+const cleanBankNames = (input, label = "Bank name") => {
+  const seen = new Set();
+  const names = [];
+
+  toBankNameList(input).forEach((raw) => {
+    const name = String(raw ?? "").trim();
+    if (!name) return;
+    if (name.length > 150) {
+      throw badRequest(`${label} "${name}" is too long (max 150 characters)`);
+    }
+    const key = name.toLowerCase();
+    if (seen.has(key)) return;
+    seen.add(key);
+    names.push(name);
+  });
+
+  return names;
+};
+
+/* Add banks — existing names are skipped, new ones appended. */
+const addBanks = async (input) => {
+  const names = cleanBankNames(input);
+
+  if (!names.length) {
+    throw badRequest("At least one bank name is required");
+  }
+
+  const master = await getBankMaster();
+  let values = Array.isArray(master.values) ? master.values : [];
+
+  names.forEach((name) => {
+    values = appendUniqueValue(values, name);
+  });
+
+  master.values = values;
+  master.markModified("values");
+  await master.save();
+
+  return master;
+};
+
+/* Replace the whole bank list in one shot. */
+const replaceBanks = async (input) => {
+  const master = await getBankMaster();
+
+  master.values = cleanBankNames(input);
+  master.markModified("values");
+  await master.save();
+
+  return master;
+};
+
+/* Remove a single bank by name. */
+const deleteBank = async (name) => {
+  const cleanName = String(name ?? "").trim();
+  if (!cleanName) throw badRequest("Bank name is required");
+
+  const master = await Master.findOne({ type: BANK_MASTER_TYPE });
+  if (!master) throw notFound('Master "banks" not found');
+
+  const values = Array.isArray(master.values) ? master.values : [];
+  const remaining = values.filter(
+    (item) => String(item ?? "").trim().toLowerCase() !== cleanName.toLowerCase()
+  );
+
+  if (remaining.length === values.length) {
+    throw notFound(`Bank "${cleanName}" not found`);
+  }
+
+  master.values = remaining;
+  master.markModified("values");
+  await master.save();
+
+  return cleanName;
 };
 
 /*
@@ -510,6 +727,13 @@ module.exports = {
   deleteMaster,
   getKind,
   appendUniqueValue,
+  BANK_MASTER_TYPE,
+  BANK_MASTER_LABEL,
+  isBankType,
+  getBankNames,
+  addBanks,
+  replaceBanks,
+  deleteBank,
   getStates,
   getCitiesByState,
   addState,
@@ -518,4 +742,7 @@ module.exports = {
   addCity,
   updateCity,
   deleteCity,
+  getPincodesForCity,
+  listPincodeLocations,
+  PINCODES_MASTER_TYPE,
 };

@@ -1,10 +1,10 @@
 const bcrypt = require("bcryptjs");
 const Admin = require("./admin.model");
 const AdminOTP = require("./adminOTP.model");
-const generateAdminToken = require("../../shared/utils/generateAdminToken");
-const sendEmail = require("../../shared/utils/sendEmail");
-const { otpEmailTemplate } = require("../../shared/utils/emailTemplates");
-const { isValidEmail, isStrongPassword } = require("../../shared/utils/validators");
+const generateAdminToken = require("../../utils/generateAdminToken");
+const sendEmail = require("../../utils/sendEmail");
+const { otpEmailTemplate } = require("../../utils/emailTemplates");
+const { isValidEmail, isStrongPassword } = require("../../utils/validators");
 
 const badRequest = (message) => {
   const error = new Error(message);

@@ -1,4 +1,4 @@
-const { EMPLOYMENT_TYPES } = require("../../shared/constants/employmentTypes");
+const { EMPLOYMENT_TYPES } = require("../../constants/employmentTypes");
 
 const normalizeLoanType = (value) => String(value ?? "").trim().toLowerCase();
 

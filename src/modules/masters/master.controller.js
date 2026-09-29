@@ -1,6 +1,6 @@
 const Master = require("./master.model");
 const adminMasterService = require("./master.service");
-const { EMPLOYMENT_TYPES } = require("../../shared/constants/employmentTypes");
+const { EMPLOYMENT_TYPES } = require("../../constants/employmentTypes");
 
 exports.getEmploymentTypes = async (req, res, next) => {
   try {
@@ -42,6 +42,57 @@ exports.getCities = async (req, res, next) => {
   }
 };
 
+/*
+==========================================
+GET /api/masters/pincodes?state=..&city=..
+
+Dependent lookup (State -> City -> Pincodes) over the seeded
+"pincodesByLocation" master. A city with no seeded list answers [] so the
+frontend can fall back to its "Other" pincode input.
+==========================================
+*/
+exports.getPincodes = async (req, res, next) => {
+  try {
+    const pincodes = await adminMasterService.getPincodesForCity(req.query.state, req.query.city);
+    res.json({ success: true, data: pincodes });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/*
+==========================================
+State/city dropdowns always come from the "states" + "citiesByState"
+masters (same hardcoded types the service already uses).
+==========================================
+*/
+const collectLocations = (data) => {
+  const locations = {};
+
+  if (data.states !== undefined) locations.states = data.states;
+  if (data.citiesByState !== undefined) locations.citiesByState = data.citiesByState;
+
+  return locations;
+};
+
+/*
+==========================================
+GET /api/masters
+
+Banks and locations used to sit as indistinguishable siblings inside one
+flat bucket (Bank01, bank01, banks, states, citiesByState...). The response
+now exposes them separately:
+
+  {
+    success: true,
+    banks:     ["HDFC Bank", "ICICI Bank"],
+    locations: { states: [...], citiesByState: { "State": ["City"] } },
+    data:      { ...unchanged flat type -> values map (back-compat)... }
+  }
+
+`data` is kept exactly as before so no existing consumer breaks.
+==========================================
+*/
 exports.getAllMasters = async (req, res, next) => {
   try {
     const masters = await Master.find().sort({ type: 1 });
@@ -51,7 +102,31 @@ exports.getAllMasters = async (req, res, next) => {
       data[m.type] = m.values;
     });
 
-    res.status(200).json({ success: true, data });
+    res.status(200).json({
+      success: true,
+      banks: await adminMasterService.getBankNames(),
+      locations: collectLocations(data),
+      data,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/*
+==========================================
+GET /api/masters/banks
+
+Banks-only list for the public loan forms — no states, no cities, no
+mixing. Public route, no token needed.
+
+  { "success": true, "data": ["HDFC Bank", "ICICI Bank"] }
+==========================================
+*/
+exports.getBanks = async (req, res, next) => {
+  try {
+    const banks = await adminMasterService.getBankNames();
+    res.json({ success: true, data: banks });
   } catch (error) {
     next(error);
   }
@@ -85,26 +160,13 @@ exports.addCustomValueForUser = async (req, res, next) => {
       });
     }
 
-    const master = await Master.findOne({ type });
-
-    if (!master) {
-      return res.status(404).json({
-        success: false,
-        message: `Master "${type}" not found`,
-      });
-    }
-
-    if (Array.isArray(master.values)) {
-      const cleanValue = String(value).trim();
-      const exists = master.values.some(
-        (item) => String(item).trim().toLowerCase() === cleanValue.toLowerCase()
-      );
-
-      if (!exists) {
-        master.values.push(cleanValue);
-        await master.save();
-      }
-    }
+    /*
+    Delegates to the shared add-value logic instead of pushing into
+    master.values directly: `values` is a Mixed field, so a raw .push() is not
+    change-tracked by mongoose and the new bank never reached the database
+    (the API still answered 200 with the in-memory list).
+    */
+    const master = await adminMasterService.addCustomValue({ type, value });
 
     res.status(200).json({
       success: true,

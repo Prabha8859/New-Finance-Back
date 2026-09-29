@@ -1,7 +1,7 @@
 require("dotenv").config();
 
 const mongoose = require("mongoose");
-const connectDB = require("../src/config/db");
+const connectDB = require("../src/config/database");
 const Master = require("../src/modules/masters/master.model");
 
 const OTHER_OPTION = "Other";
@@ -11,7 +11,7 @@ const MASTERS_SEED = [
     type: "existingLoanTypes",
     label: "Existing Loan Types",
     values: [
-      "Personal loan", "Business loan", "Home loan", "Car loan", "Working Capital",
+      "Personal loan", "Business loan", "Home loan", "Vehicle loan", "Working Capital",
       "Project Loan", "OD/CC", "Loan against share", "Gold loan", OTHER_OPTION,
     ],
   },

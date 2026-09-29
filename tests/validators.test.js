@@ -1,29 +1,29 @@
-const { registerValidator } = require("../src/modules/auth/auth.validators");
-const { applyValidator } = require("../src/modules/loans/validators/personalLoan.validators");
-const { normalizeTransactionBankNames, sanitizeBusinessLoanResponse } = require("../src/modules/loans/controllers/businessLoan.controller");
-const homeLoanController = require("../src/modules/loans/controllers/homeLoan.controller");
-const personalLoanController = require("../src/modules/loans/controllers/personalLoan.controller");
-const { normalizeApplyPayload } = require("../src/shared/utils/normalizeLoanPayload");
+const { registerValidator } = require("../src/modules/auth/auth.validator");
+const { applyValidator } = require("../src/modules/loans/personal-loan/personalLoan.validator");
+const { normalizeTransactionBankNames, sanitizeBusinessLoanResponse } = require("../src/modules/loans/business-loan/businessLoan.controller");
+const homeLoanController = require("../src/modules/loans/home-loan/homeLoan.controller");
+const personalLoanController = require("../src/modules/loans/personal-loan/personalLoan.controller");
+const { normalizeApplyPayload } = require("../src/utils/normalizeLoanPayload");
 const { appendUniqueValue } = require("../src/modules/masters/master.service");
-const PersonalLoan = require("../src/modules/loans/models/personalLoan.model");
-const LoanAgainstProperty = require("../src/modules/loans/models/loanAgainstProperty.model");
-const LoanAgainstPropertyController = require("../src/modules/loans/controllers/loanAgainstProperty.controller");
-const BusinessLoan = require("../src/modules/loans/models/businessLoan.model");
-const HomeLoan = require("../src/modules/loans/models/homeLoan.model");
-const { businessIncomeFields } = require("../src/modules/loans/schema");
+const PersonalLoan = require("../src/modules/loans/personal-loan/personalLoan.model");
+const LoanAgainstProperty = require("../src/modules/loans/loan-against-property/loanAgainstProperty.model");
+const LoanAgainstPropertyController = require("../src/modules/loans/loan-against-property/loanAgainstProperty.controller");
+const BusinessLoan = require("../src/modules/loans/business-loan/businessLoan.model");
+const HomeLoan = require("../src/modules/loans/home-loan/homeLoan.model");
+const { businessIncomeFields } = require("../src/modules/loans/shared/loanSchema");
 const businessApplicationController = require("../src/modules/admin/application.controller");
-const BalanceTransfer = require("../src/modules/loans/models/balanceTransfer.model");
-const { applyValidator: balanceTransferApplyValidator } = require("../src/modules/loans/validators/balanceTransfer.validators");
-const ProjectLoan = require("../src/modules/loans/models/projectLoan.model");
-const { applyValidator: projectLoanApplyValidator } = require("../src/modules/loans/validators/projectLoan.validators");
-const CarLoan = require("../src/modules/loans/models/carLoan.model");
-const { applyValidator: carLoanApplyValidator } = require("../src/modules/loans/validators/carLoan.validators");
-const EducationLoan = require("../src/modules/loans/models/educationLoan.model");
-const { applyValidator: educationLoanApplyValidator } = require("../src/modules/loans/validators/educationLoan.validators");
-const CreditCard = require("../src/modules/loans/models/creditCard.model");
-const { applyValidator: creditCardApplyValidator } = require("../src/modules/loans/validators/creditCard.validators");
+const BalanceTransfer = require("../src/modules/loans/balance-transfer/balanceTransfer.model");
+const { applyValidator: balanceTransferApplyValidator } = require("../src/modules/loans/balance-transfer/balanceTransfer.validator");
+const ProjectLoan = require("../src/modules/loans/project-loan/projectLoan.model");
+const { applyValidator: projectLoanApplyValidator } = require("../src/modules/loans/project-loan/projectLoan.validator");
+const VehicleLoan = require("../src/modules/loans/vehicle-loan/vehicleLoan.model");
+const { applyValidator: vehicleLoanApplyValidator } = require("../src/modules/loans/vehicle-loan/vehicleLoan.validator");
+const EducationLoan = require("../src/modules/loans/education-loan/educationLoan.model");
+const { applyValidator: educationLoanApplyValidator } = require("../src/modules/loans/education-loan/educationLoan.validator");
+const CreditCard = require("../src/modules/loans/credit-card/creditCard.model");
+const { applyValidator: creditCardApplyValidator } = require("../src/modules/loans/credit-card/creditCard.validator");
 
-jest.mock("../src/modules/loans/models/businessLoan.model", () => ({
+jest.mock("../src/modules/loans/business-loan/businessLoan.model", () => ({
   find: jest.fn(),
   findById: jest.fn(),
 }));
@@ -402,7 +402,7 @@ describe("homeLoanController.apply (Self Employed - Business)", () => {
 });
 
 describe("homeLoanValidators.applyValidator (Self Employed - Business)", () => {
-  const { applyValidator: homeApplyValidator } = require("../src/modules/loans/validators/homeLoan.validators");
+  const { applyValidator: homeApplyValidator } = require("../src/modules/loans/home-loan/homeLoan.validator");
 
   const businessPayload = {
     loanAmount: 1800000,
@@ -539,8 +539,8 @@ describe("normalizeLoanPayload.normalizeApplyPayload", () => {
 });
 
 describe("applyValidator (dashboard quick-form payloads)", () => {
-  const { applyValidator: homeApplyValidator } = require("../src/modules/loans/validators/homeLoan.validators");
-  const { applyValidator: businessApplyValidator } = require("../src/modules/loans/validators/businessLoan.validators");
+  const { applyValidator: homeApplyValidator } = require("../src/modules/loans/home-loan/homeLoan.validator");
+  const { applyValidator: businessApplyValidator } = require("../src/modules/loans/business-loan/businessLoan.validator");
 
   it("home loan: accepts a business payload without buying-property fields", async () => {
     const result = await runChain(homeApplyValidator, dashboardBusinessPayload());
@@ -576,7 +576,7 @@ describe("homeLoanController.apply (dashboard quick form)", () => {
 
     const payload = dashboardBusinessPayload({
       status: "Pending",
-      loanType: "Car Loan",
+      loanType: "Vehicle Loan",
       user: "some-other-user",
       createdAt: "2026-01-01T00:00:00.000Z",
     });
@@ -643,8 +643,8 @@ describe("personalLoanController.apply (dashboard contract)", () => {
 });
 
 describe("salaried salary-bank rules (dashboard Cash case)", () => {
-  const { applyValidator: homeApplyValidator } = require("../src/modules/loans/validators/homeLoan.validators");
-  const { salaryBankName } = require("../src/modules/loans/schema").employmentIncomeFields;
+  const { applyValidator: homeApplyValidator } = require("../src/modules/loans/home-loan/homeLoan.validator");
+  const { salaryBankName } = require("../src/modules/loans/shared/loanSchema").employmentIncomeFields;
 
   const salariedPayload = (overrides = {}) => ({
     loanAmount: 1500000,
@@ -719,7 +719,7 @@ const lapPayload = (overrides = {}) => ({
 });
 
 describe("loanAgainstPropertyValidators.applyValidator", () => {
-  const { applyValidator: lapApplyValidator } = require("../src/modules/loans/validators/loanAgainstProperty.validators");
+  const { applyValidator: lapApplyValidator } = require("../src/modules/loans/loan-against-property/loanAgainstProperty.validator");
 
   it("passes a complete self-employed business payload", async () => {
     const result = await runChain(lapApplyValidator, lapPayload());
@@ -788,7 +788,7 @@ describe("loanAgainstPropertyController.apply", () => {
     });
 
     await LoanAgainstPropertyController.apply(
-      { body: lapPayload({ status: "Pending", loanType: "Car Loan", user: "someone-else" }), user: { id: "64f000000000000000000001" } },
+      { body: lapPayload({ status: "Pending", loanType: "Vehicle Loan", user: "someone-else" }), user: { id: "64f000000000000000000001" } },
       res,
       jest.fn()
     );
@@ -946,8 +946,8 @@ describe("projectLoan (Loan Requirements)", () => {
   });
 });
 
-describe("carLoan (Loan Requirements)", () => {
-  const carLoanPayload = (overrides = {}) => ({
+describe("vehicleLoan (Loan Requirements)", () => {
+  const vehicleLoanPayload = (overrides = {}) => ({
     loanAmount: 800000,
     loanTenure: 84,
     vehicleType: "SUV",
@@ -974,14 +974,14 @@ describe("carLoan (Loan Requirements)", () => {
   });
 
   it("passes a complete salaried car payload", async () => {
-    const result = await runChain(carLoanApplyValidator, carLoanPayload());
+    const result = await runChain(vehicleLoanApplyValidator, vehicleLoanPayload());
     expect(result.passed).toBe(true);
   });
 
   it("passes with only loanAmount + tenure (vehicle fields are optional)", async () => {
     const result = await runChain(
-      carLoanApplyValidator,
-      carLoanPayload({
+      vehicleLoanApplyValidator,
+      vehicleLoanPayload({
         vehicleType: undefined,
         transmissionType: undefined,
         manufacturer: undefined,
@@ -994,14 +994,14 @@ describe("carLoan (Loan Requirements)", () => {
 
   it("requires the free-text partner when vehicleType is Other", async () => {
     const result = await runChain(
-      carLoanApplyValidator,
-      carLoanPayload({ vehicleType: "Other", vehicleTypeOther: "" })
+      vehicleLoanApplyValidator,
+      vehicleLoanPayload({ vehicleType: "Other", vehicleTypeOther: "" })
     );
     expect(result.passed).toBe(false);
   });
 
   it("validates a complete application against the model", () => {
-    const doc = new CarLoan({ user: "64f000000000000000000001", ...carLoanPayload() });
+    const doc = new VehicleLoan({ user: "64f000000000000000000001", ...vehicleLoanPayload() });
     expect(doc.validateSync()).toBeUndefined();
   });
 });
@@ -1121,5 +1121,116 @@ describe("creditCard (Credit Card Details)", () => {
     const fields = error ? Object.keys(error.errors) : [];
     expect(fields).not.toContain("loanAmount");
     expect(fields).not.toContain("loanTenure");
+  });
+});
+
+describe("employment type field scoping (schema registry)", () => {
+  const {
+    incomeFieldNamesForEmploymentType,
+    businessIncomeFields,
+  } = require("../src/modules/loans/shared/loanSchema");
+
+  it("salaried applicants get only salaried income fields", () => {
+    const fields = incomeFieldNamesForEmploymentType("Salaried");
+
+    expect(fields).toContain("companyName");
+    expect(fields).toContain("salaryBankName");
+    expect(fields).not.toContain("profession");
+    expect(fields).not.toContain("businessType");
+    expect(fields).not.toContain("transactionBankName");
+    expect(fields).not.toContain("businessState");
+  });
+
+  it("Self Employed - Business excludes professional-only fields", () => {
+    const fields = incomeFieldNamesForEmploymentType("Self Employed - Business");
+
+    expect(fields).toContain("businessType");
+    expect(fields).toContain("businessName");
+    expect(fields).toContain("lastYearTurnover");
+    expect(fields).toContain("transactionBankName");
+    expect(fields).toContain("businessState");
+    expect(fields).not.toContain("profession");
+    expect(fields).not.toContain("currentYearTurnover");
+    expect(fields).not.toContain("priorYearTurnover");
+    expect(fields).not.toContain("currentYearNetIncome");
+    expect(fields).not.toContain("previousYearNetIncome");
+  });
+
+  it("Self Employed - Professional excludes business-only fields", () => {
+    const fields = incomeFieldNamesForEmploymentType("Self Employed - Professional");
+
+    expect(fields).toContain("profession");
+    expect(fields).toContain("currentYearTurnover");
+    expect(fields).toContain("priorYearTurnover");
+    expect(fields).toContain("currentYearNetIncome");
+    expect(fields).toContain("previousYearNetIncome");
+    expect(fields).toContain("businessState");
+    expect(fields).toContain("businessCity");
+    expect(fields).toContain("businessPincode");
+    expect(fields).toContain("businessPlaceStatus");
+    expect(fields).toContain("transactionBankName");
+    expect(fields).not.toContain("businessType");
+    expect(fields).not.toContain("businessName");
+    expect(fields).not.toContain("lastYearTurnover");
+    expect(fields).not.toContain("lastYearNetIncome");
+  });
+
+  it("supportsTransactionBanks matches only the self-employed types", () => {
+    const { buildLoanDocument } = require("../src/modules/loans/shared/loan.service");
+
+    const business = buildLoanDocument("business", { employmentType: "Self Employed - Business", transactionBankOther: "Yes Bank" }, "u1");
+    expect(business.transactionBankName).toEqual({ displayName: "Yes Bank", banks: ["Yes Bank"] });
+    // The Other field is request-only input — never stored on the document.
+    expect(business.transactionBankOther).toBeUndefined();
+  });
+
+  it("keeps transactionBankOther optional (stored only inside transactionBankName)", () => {
+    expect(businessIncomeFields.transactionBankOther.type).toBe(String);
+    expect(businessIncomeFields.transactionBankOther.required).toBeFalsy();
+  });
+});
+
+describe("masters pincode lookup (state -> city -> pincodes)", () => {
+  const masterService = require("../src/modules/masters/master.service");
+  const Master = require("../src/modules/masters/master.model");
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  const mockPincodesMaster = (values) =>
+    jest.spyOn(Master, "findOne").mockResolvedValue({ values });
+
+  it("returns the city's pincode list for an exact seed key", async () => {
+    mockPincodesMaster({ "maharashtra::pune": ["411001", "411002"] });
+    await expect(masterService.getPincodesForCity("Maharashtra", "Pune")).resolves.toEqual(["411001", "411002"]);
+  });
+
+  it("matches seed keys case-insensitively", async () => {
+    mockPincodesMaster({ "Maharashtra::Pune": ["411001"] });
+    await expect(masterService.getPincodesForCity("maharashtra", "PUNE")).resolves.toEqual(["411001"]);
+  });
+
+  it("answers [] for a city with no seeded pincodes (Other-input fallback)", async () => {
+    mockPincodesMaster({ "maharashtra::pune": ["411001"] });
+    await expect(masterService.getPincodesForCity("Maharashtra", "Nagpur")).resolves.toEqual([]);
+  });
+
+  it("answers [] when the master is missing or malformed", async () => {
+    jest.spyOn(Master, "findOne").mockResolvedValue(null);
+    await expect(masterService.getPincodesForCity("Maharashtra", "Pune")).resolves.toEqual([]);
+
+    mockPincodesMaster("not-an-object");
+    await expect(masterService.getPincodesForCity("Maharashtra", "Pune")).resolves.toEqual([]);
+  });
+
+  it("rejects empty state/city input", async () => {
+    await expect(masterService.getPincodesForCity("", "Pune")).rejects.toMatchObject({ statusCode: 400 });
+    await expect(masterService.getPincodesForCity("Maharashtra", "  ")).rejects.toMatchObject({ statusCode: 400 });
+  });
+
+  it("lists all seeded locations", async () => {
+    mockPincodesMaster({ "maharashtra::pune": ["411001"], "gujarat::ahmedabad": ["380001"] });
+    await expect(masterService.listPincodeLocations()).resolves.toEqual(["gujarat::ahmedabad", "maharashtra::pune"]);
   });
 });

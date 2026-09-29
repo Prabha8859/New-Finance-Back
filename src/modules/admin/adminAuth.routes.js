@@ -1,14 +1,14 @@
 const router = require("express").Router();
 
 const adminAuthController = require("./adminAuth.controller");
-const adminAuth = require("../../shared/middleware/adminAuth");
-const { adminLoginLimiter, otpRequestLimiter } = require("../../shared/middleware/rateLimit");
+const adminAuth = require("../../middleware/adminAuth.middleware");
+const { adminLoginLimiter, otpRequestLimiter } = require("../../middleware/rateLimit.middleware");
 const {
   loginValidator,
   forgotPasswordValidator,
   resetPasswordValidator,
   changePasswordValidator,
-} = require("./adminAuth.validators");
+} = require("./adminAuth.validator");
 
 /*
 ========================================

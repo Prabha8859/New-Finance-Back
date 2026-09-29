@@ -33,6 +33,25 @@ exports.getCities = async (req, res, next) => {
   }
 };
 
+/*
+==========================================
+GET /api/admin/masters/states/:state/cities/:city/pincodes
+GET /api/admin/masters/pincodes?state=..&city=..
+
+Same dependent pincode lookup as the public API, for the admin panel.
+==========================================
+*/
+exports.getPincodes = async (req, res, next) => {
+  try {
+    const state = req.params.state || req.query.state;
+    const city = req.params.city || req.query.city;
+    const pincodes = await masterService.getPincodesForCity(state, city);
+    res.json({ success: true, data: pincodes });
+  } catch (error) {
+    next(error);
+  }
+};
+
 exports.addState = async (req, res, next) => {
   try {
     const input = Array.isArray(req.body.values) ? req.body.values : [req.body.state ?? req.body.value];
@@ -142,6 +161,90 @@ exports.addCustomValue = async (req, res, next) => {
       message: "Custom master value added successfully",
       master,
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/*
+==========================================
+BANKS — one master, no type/label needed
+
+GET    /api/admin/masters/banks
+POST   /api/admin/masters/banks
+PUT    /api/admin/masters/banks
+DELETE /api/admin/masters/banks/:name
+==========================================
+*/
+
+exports.listBanks = async (req, res, next) => {
+  try {
+    const banks = await masterService.getBankNames();
+    res.json({ success: true, count: banks.length, banks });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/*
+POST /api/admin/masters/banks
+
+Body can be any of these — no "type"/"label" needed:
+  { "banks": ["HDFC Bank", "ICICI Bank"] }
+  { "values": ["HDFC Bank"] }
+  { "value": "HDFC Bank" }
+  ["HDFC Bank", "ICICI Bank"]
+Existing banks are skipped, new ones are added.
+==========================================
+*/
+exports.addBanks = async (req, res, next) => {
+  try {
+    const master = await masterService.addBanks(req.body);
+    const banks = Array.isArray(master.values) ? master.values : [];
+
+    res.status(201).json({
+      success: true,
+      message: "Banks added successfully",
+      count: banks.length,
+      banks,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/*
+PUT /api/admin/masters/banks
+
+Replaces the whole list with whatever is sent (same body shapes as POST).
+==========================================
+*/
+exports.replaceBanks = async (req, res, next) => {
+  try {
+    const master = await masterService.replaceBanks(req.body);
+    const banks = Array.isArray(master.values) ? master.values : [];
+
+    res.json({
+      success: true,
+      message: "Banks saved successfully",
+      count: banks.length,
+      banks,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/*
+DELETE /api/admin/masters/banks/:name  (or ?name=HDFC%20Bank)
+==========================================
+*/
+exports.deleteBank = async (req, res, next) => {
+  try {
+    const name = req.params.name || req.query.name;
+    const deleted = await masterService.deleteBank(name);
+
+    res.json({ success: true, message: `Bank "${deleted}" deleted successfully` });
   } catch (error) {
     next(error);
   }

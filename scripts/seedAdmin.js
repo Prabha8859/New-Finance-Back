@@ -2,7 +2,7 @@ require("dotenv").config();
 
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
-const connectDB = require("../src/config/db");
+const connectDB = require("../src/config/database");
 const Admin = require("../src/modules/admin/admin.model");
 
 const ADMIN_NAME = process.env.ADMIN_SEED_NAME || "Super Admin";

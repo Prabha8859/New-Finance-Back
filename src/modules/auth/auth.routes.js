@@ -1,14 +1,14 @@
 const router = require("express").Router();
 
 const authController = require("./auth.controller");
-const auth = require("../../shared/middleware/auth");
-const { otpRequestLimiter, otpVerifyLimiter } = require("../../shared/middleware/rateLimit");
+const auth = require("../../middleware/auth.middleware");
+const { otpRequestLimiter, otpVerifyLimiter } = require("../../middleware/rateLimit.middleware");
 const {
   registerValidator,
   loginValidator,
   verifyOtpValidator,
   verifyLoginOtpValidator,
-} = require("./auth.validators");
+} = require("./auth.validator");
 
 /*
 ========================================
