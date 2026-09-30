@@ -433,9 +433,18 @@ const getMasterById = async (id) => {
   return master;
 };
 
+/*
+Location masters are grouped stores — when created without explicit values
+they must start as {} (not []), otherwise the first grouped write gets
+rejected as a shape switch.
+==========================================
+*/
+const GROUPED_DEFAULT_TYPES = new Set(["citiesByState", "statesByCountry", "pincodesByCity"]);
+const defaultValuesForType = (type) => (GROUPED_DEFAULT_TYPES.has(type) ? {} : []);
+
 const createMaster = async ({ type, label, values }) => {
   const cleanType = normalizeType(type);
-  const cleanValues = values === undefined ? [] : normalizeValues(values);
+  const cleanValues = values === undefined ? defaultValuesForType(cleanType) : normalizeValues(values);
 
   const existing = await Master.findOne({ type: cleanType });
   if (existing) {
@@ -564,6 +573,11 @@ const getBankMaster = async () => {
       label: BANK_MASTER_LABEL,
       values: [],
     });
+  } else if (master.label !== BANK_MASTER_LABEL) {
+    // The "banks" master is created lazily by many flows — keep its label
+    // canonical ("Banks") no matter which flow created it first.
+    master.label = BANK_MASTER_LABEL;
+    await master.save();
   }
 
   return master;
@@ -644,6 +658,39 @@ const replaceBanks = async (input) => {
   return master;
 };
 
+/* Rename one bank in place (Bank Details page), case-insensitive match. */
+const renameBank = async (oldName, newName) => {
+  const cleanOld = String(oldName ?? "").trim();
+  const cleanNew = String(newName ?? "").trim();
+
+  if (!cleanOld) throw badRequest("Current bank name is required");
+  if (!cleanNew) throw badRequest("New bank name is required");
+  if (cleanNew.length > 150) {
+    throw badRequest(`Bank name "${cleanNew}" is too long (max 150 characters)`);
+  }
+
+  const master = await getBankMaster();
+  const values = Array.isArray(master.values) ? master.values : [];
+  const index = values.findIndex(
+    (item) => String(item ?? "").trim().toLowerCase() === cleanOld.toLowerCase()
+  );
+  if (index === -1) throw notFound(`Bank "${cleanOld}" not found`);
+
+  const duplicate = values.some(
+    (item, itemIndex) =>
+      itemIndex !== index &&
+      String(item ?? "").trim().toLowerCase() === cleanNew.toLowerCase()
+  );
+  if (duplicate) throw badRequest(`Bank "${cleanNew}" already exists`);
+
+  values[index] = cleanNew;
+  master.values = values;
+  master.markModified("values");
+  await master.save();
+
+  return master;
+};
+
 /* Remove a single bank by name. */
 const deleteBank = async (name) => {
   const cleanName = String(name ?? "").trim();
@@ -687,6 +734,18 @@ const updateMasterLabel = async (id, label) => {
   return master;
 };
 
+/*
+Empty values ([] / {}) hold no data, so switching their shape is lossless.
+This is what lets a master seeded as [] (e.g. statesByCountry) grow into a
+grouped store the first time the admin Location page writes to it.
+==========================================
+*/
+const isEmptyValues = (values) =>
+  values === undefined ||
+  values === null ||
+  (Array.isArray(values) && values.length === 0) ||
+  (isPlainObject(values) && Object.keys(values).length === 0);
+
 const replaceMasterValues = async (id, values) => {
   const master = await Master.findById(id);
   if (!master) throw notFound("Master not found");
@@ -695,7 +754,11 @@ const replaceMasterValues = async (id, values) => {
   const cleanValues = normalizeValues(values);
   const newKind = getKind(cleanValues);
 
-  if (existingKind !== "unknown" && existingKind !== newKind) {
+  if (
+    existingKind !== "unknown" &&
+    existingKind !== newKind &&
+    !isEmptyValues(master.values)
+  ) {
     throw badRequest(
       `"${master.label}" stores a ${existingKind === "list" ? "flat list" : "grouped list"} — cannot switch shape`
     );
@@ -731,8 +794,10 @@ module.exports = {
   BANK_MASTER_LABEL,
   isBankType,
   getBankNames,
+  getBankMaster,
   addBanks,
   replaceBanks,
+  renameBank,
   deleteBank,
   getStates,
   getCitiesByState,

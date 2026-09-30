@@ -5,10 +5,28 @@
  * (the applicant must never send those).
  * ========================================================================= */
 
+const mongoose = require("mongoose");
+
 /** Fields the applicant always fills (loanTenure is stored in MONTHS). */
 const LOAN_FIELD_NAMES = ["loanAmount", "loanTenure"];
 
 /** Set by the server / route, never by the applicant. */
 const SERVER_MANAGED_FIELD_NAMES = ["user", "loanType", "status", "createdAt", "updatedAt", "__v", "_id"];
 
-module.exports = { LOAN_FIELD_NAMES, SERVER_MANAGED_FIELD_NAMES };
+/** Set by the admin panel (PATCH /{resource}/:id/status), never by an applicant. */
+const ADMIN_REVIEW_FIELD_NAMES = ["approvedBy", "approvedAt", "rejectedAt", "adminNote"];
+
+/** Mongoose field objects shared by every loan product's schema. */
+const ADMIN_REVIEW_FIELDS = {
+  approvedBy: { type: mongoose.Schema.Types.ObjectId, ref: "Admin", default: null },
+  approvedAt: { type: Date, default: null },
+  rejectedAt: { type: Date, default: null },
+  adminNote: { type: String, default: "", maxlength: [500, "Note is too long (max 500 characters)"] },
+};
+
+module.exports = {
+  LOAN_FIELD_NAMES,
+  SERVER_MANAGED_FIELD_NAMES,
+  ADMIN_REVIEW_FIELD_NAMES,
+  ADMIN_REVIEW_FIELDS,
+};

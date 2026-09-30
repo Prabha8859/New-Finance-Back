@@ -14,6 +14,14 @@ router.use("/auth", require("./adminAuth.routes"));
 
 router.use("/", adminAuth, require("./application.routes"));
 
+/*
+Location Master owns its own relational collections (continents, countries,
+states, cities, pincodes) and lives in src/modules/location. It must be
+mounted BEFORE "/masters" so "/masters/location" is not swallowed by the
+generic master routes.
+*/
+router.use("/masters/location", adminAuth, require("../location/location.routes"));
+
 router.use("/masters", adminAuth, require("./master.routes"));
 
 router.use("/customers", adminAuth, require("./customer.routes"));

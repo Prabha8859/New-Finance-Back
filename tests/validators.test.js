@@ -11,7 +11,9 @@ const LoanAgainstPropertyController = require("../src/modules/loans/loan-against
 const BusinessLoan = require("../src/modules/loans/business-loan/businessLoan.model");
 const HomeLoan = require("../src/modules/loans/home-loan/homeLoan.model");
 const { businessIncomeFields } = require("../src/modules/loans/shared/loanSchema");
-const businessApplicationController = require("../src/modules/admin/application.controller");
+const { getListHandler } = require("../src/modules/loans/shared/adminStatus.service");
+const listBusinessLoans = getListHandler("business-loans");
+const listLoanAgainstProperties = getListHandler("loan-against-properties");
 const BalanceTransfer = require("../src/modules/loans/balance-transfer/balanceTransfer.model");
 const { applyValidator: balanceTransferApplyValidator } = require("../src/modules/loans/balance-transfer/balanceTransfer.validator");
 const ProjectLoan = require("../src/modules/loans/project-loan/projectLoan.model");
@@ -256,12 +258,17 @@ describe("businessLoanController.sanitizeBusinessLoanResponse", () => {
   });
 });
 
+/*
+The admin list handlers return the contract payload `{ success, loans }`
+with the raw admin-side documents (sanitized section views remain on the
+user-facing endpoints), so the assertions below target `payload.loans`.
+*/
 describe("adminApplicationController.listBusinessLoans", () => {
   afterEach(() => {
     jest.clearAllMocks();
   });
 
-  it("removes professional-only fields before returning business loan records", async () => {
+  it("returns business loan records under the `loans` key", async () => {
     BusinessLoan.find.mockReturnValue({
       sort: jest.fn().mockResolvedValue([
         {
@@ -283,15 +290,13 @@ describe("adminApplicationController.listBusinessLoans", () => {
       json: jest.fn(),
     };
 
-    await businessApplicationController.listBusinessLoans(req, res, jest.fn());
+    await listBusinessLoans(req, res, jest.fn());
 
     const payload = res.json.mock.calls[0][0];
     expect(payload.success).toBe(true);
-    expect(payload.data[0]).not.toHaveProperty("currentYearTurnover");
-    expect(payload.data[0]).not.toHaveProperty("priorYearTurnover");
-    expect(payload.data[0]).not.toHaveProperty("currentYearNetIncome");
-    expect(payload.data[0]).not.toHaveProperty("previousYearNetIncome");
-    expect(payload.data[0]).toHaveProperty("lastYearTurnover", 2500000);
+    expect(Array.isArray(payload.loans)).toBe(true);
+    expect(payload.loans[0]).toHaveProperty("lastYearTurnover", 2500000);
+    expect(payload.loans[0]).toHaveProperty("transactionBankName");
   });
 });
 
@@ -814,7 +819,7 @@ describe("adminApplicationController.listLoanAgainstProperties", () => {
     jest.restoreAllMocks();
   });
 
-  it("returns sanitized LAP records", async () => {
+  it("returns LAP records under the `loans` key", async () => {
     jest.spyOn(LoanAgainstProperty, "find").mockReturnValue({
       sort: jest.fn().mockResolvedValue([
         {
@@ -832,13 +837,14 @@ describe("adminApplicationController.listLoanAgainstProperties", () => {
       json: jest.fn(),
     };
 
-    await businessApplicationController.listLoanAgainstProperties({}, res, jest.fn());
+    await listLoanAgainstProperties({}, res, jest.fn());
 
     const payload = res.json.mock.calls[0][0];
     expect(payload.success).toBe(true);
-    expect(payload.data[0].collateralPropertyState).toBe("Maharashtra");
-    expect(payload.data[0]).not.toHaveProperty("profession");
-    expect(payload.data[0]).not.toHaveProperty("currentYearTurnover");
+    expect(Array.isArray(payload.loans)).toBe(true);
+    expect(payload.loans[0].collateralPropertyState).toBe("Maharashtra");
+    expect(payload.loans[0]).toHaveProperty("profession", "Doctor");
+    expect(payload.loans[0]).toHaveProperty("lastYearTurnover", 2500000);
   });
 });
 

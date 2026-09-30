@@ -1,7 +1,12 @@
 const mongoose = require("mongoose");
 const { LOAN_PRODUCTS } = require("./loanProducts");
 
-const { LOAN_FIELD_NAMES, SERVER_MANAGED_FIELD_NAMES } = require("./loanBasics.schema");
+const {
+  LOAN_FIELD_NAMES,
+  SERVER_MANAGED_FIELD_NAMES,
+  ADMIN_REVIEW_FIELDS,
+  ADMIN_REVIEW_FIELD_NAMES,
+} = require("./loanBasics.schema");
 const {
   personalDetailsFields,
   requiredPersonalDetailsFields,
@@ -182,6 +187,12 @@ const buildLoanSchema = (productKey) => {
         enum: ["Pending", "Approved", "Rejected", "Submitted"],
         default: "Submitted",
       },
+
+      // Admin review trail (PATCH /api/admin/{resource}/:id/status) — the
+      // applicant-facing API never accepts these fields (SERVER_MANAGED keeps
+      // them out of buildLoanDocument; ADMIN_REVIEW_FIELD_NAMES keeps them in
+      // admin responses).
+      ...ADMIN_REVIEW_FIELDS,
     },
     { timestamps: true }
   );
@@ -193,6 +204,8 @@ module.exports = {
   // Field-name lists, used by the service to copy / trim fields safely.
   LOAN_FIELD_NAMES,
   SERVER_MANAGED_FIELD_NAMES,
+  ADMIN_REVIEW_FIELDS,
+  ADMIN_REVIEW_FIELD_NAMES,
   PERSONAL_DETAILS_FIELD_NAMES,
   EXPOSURE_FIELD_NAMES,
   MULTI_VALUE_EXPOSURE_FIELD_NAMES,

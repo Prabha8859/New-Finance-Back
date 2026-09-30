@@ -46,4 +46,17 @@ const adminLoginLimiter = rateLimit({
   },
 });
 
-module.exports = { otpRequestLimiter, otpVerifyLimiter, adminLoginLimiter };
+// Public location lookup (pincode validate / typeahead / dropdowns) — read-only
+// but unauthenticated, so a runaway form loop should not hammer Mongo.
+const locationLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 120,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    success: false,
+    message: "Too many location requests. Please try again in a minute.",
+  },
+});
+
+module.exports = { otpRequestLimiter, otpVerifyLimiter, adminLoginLimiter, locationLimiter };

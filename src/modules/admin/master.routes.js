@@ -1,6 +1,7 @@
 const router = require("express").Router();
 
 const masterController = require("./master.controller");
+const banksDetails = require("./banksDetails.controller");
 
 router.get("/", masterController.list);
 router.post("/", masterController.create);
@@ -14,6 +15,21 @@ router.get("/banks", masterController.listBanks);
 router.post("/banks", masterController.addBanks);
 router.put("/banks", masterController.replaceBanks);
 router.delete("/banks/:name", masterController.deleteBank);
+
+/*
+Bank Details page — same "banks" master, richer payload (id/label/kind) and
+per-value rename. Must stay above "/:id" as well.
+*/
+router.get("/banksdetails", banksDetails.details);
+router.post("/banksdetails", banksDetails.addOne);
+router.put("/banksdetails/:value", banksDetails.renameOne);
+router.delete("/banksdetails/:value", banksDetails.removeOne);
+
+/*
+NOTE: the admin Location Master lives in its own relational module
+(src/modules/location) and is mounted at /api/admin/masters/location.
+It no longer shares the generic grouped-master store.
+*/
 
 router.get("/states", masterController.getStates);
 router.post("/states", masterController.addState);
