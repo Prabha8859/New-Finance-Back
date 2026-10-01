@@ -15,6 +15,7 @@ removes it from the forms.
   GET  /pincode?q=4000      type-ahead suggestions (pincode or city name)
   POST /pincode/validate    applicant NE "State -> City -> Pincode" bhara hai:
                             typed pincode us chune hue place ka hai ya nahi
+  GET  /continents          active continents (cascade ka pehla step)
   GET  /countries           active countries (optionally ?continentId=)
   GET  /states?countryId=   active states of a country
   GET  /cities?stateId=     active cities of a state
@@ -31,6 +32,7 @@ router.get("/pincode", controller.suggestPincodes);
 /* State/City selected + pincode typed -> is that pincode really theirs? */
 router.post("/pincode/validate", controller.validatePincode);
 
+router.get("/continents", controller.listActive("continents"));
 router.get("/countries", controller.listActive("countries"));
 router.get("/states", controller.listActive("states"));
 router.get("/cities", controller.listActive("cities"));

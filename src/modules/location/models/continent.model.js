@@ -49,4 +49,6 @@ const continentSchema = new mongoose.Schema(
 continentSchema.index({ slug: 1 }, { unique: true });
 continentSchema.index({ status: 1, name: 1 });
 
-module.exports = mongoose.model("Continent", continentSchema);
+/* "location." prefix keeps all five location collections grouped as one
+   folder in MongoDB Compass (location.continents / countries / states / ...). */
+module.exports = mongoose.model("Continent", continentSchema, "location.continents");

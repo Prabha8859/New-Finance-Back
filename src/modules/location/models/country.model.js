@@ -65,4 +65,4 @@ countrySchema.index({ continentId: 1, status: 1, name: 1 });
 /* slug-first so name searches anywhere in the hierarchy use an index. */
 countrySchema.index({ slug: 1 });
 
-module.exports = mongoose.model("Country", countrySchema);
+module.exports = mongoose.model("Country", countrySchema, "location.countries");
