@@ -80,4 +80,4 @@ pincodeSchema.index({ stateId: 1, cityId: 1, status: 1 });
 /* City-scoped admin lists and cascade child scans. */
 pincodeSchema.index({ cityId: 1, status: 1 });
 
-module.exports = mongoose.model("Pincode", pincodeSchema, "location.pincodes");
+module.exports = mongoose.model("Pincode", pincodeSchema);

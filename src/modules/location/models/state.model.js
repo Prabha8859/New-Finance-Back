@@ -53,4 +53,4 @@ stateSchema.index({ countryId: 1, status: 1, name: 1 });
 /* slug-first so name searches anywhere in the hierarchy use an index. */
 stateSchema.index({ slug: 1 });
 
-module.exports = mongoose.model("State", stateSchema, "location.states");
+module.exports = mongoose.model("State", stateSchema);

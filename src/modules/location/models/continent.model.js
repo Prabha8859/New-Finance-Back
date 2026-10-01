@@ -51,4 +51,4 @@ continentSchema.index({ status: 1, name: 1 });
 
 /* "location." prefix keeps all five location collections grouped as one
    folder in MongoDB Compass (location.continents / countries / states / ...). */
-module.exports = mongoose.model("Continent", continentSchema, "location.continents");
+module.exports = mongoose.model("Continent", continentSchema);
