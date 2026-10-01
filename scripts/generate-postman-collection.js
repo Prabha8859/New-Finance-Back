@@ -132,6 +132,16 @@ const requirementSamples = {
     totalProjectCost: 20000000,
     ownInvestmentAmount: 5000000,
   },
+  fdiLoan: {
+    collateralPropertyType: "Company Valuation",
+    collateralPropertyTypeOther: "",
+    collateralPropertyMarketValue: 1000000000,
+    collateralPropertyAge: 5,
+    collateralPropertyState: "Maharashtra",
+    collateralPropertyCity: "Pune",
+    collateralPropertyPincode: "411001",
+    collateralPropertyPincodeOther: "",
+  },
   npaLoan: {
     npaStatus: "1-6 Months",
     npaStatusOther: "",
@@ -186,6 +196,8 @@ const requirementSamples = {
     vehicleTypeOther: "",
     transmissionType: "Automatic",
     transmissionTypeOther: "",
+    fuelType: "Petrol",
+    fuelTypeOther: "",
     manufacturer: "Hyundai",
     model: "Creta",
     vehiclePurchaseType: "New Vehicle",
@@ -219,6 +231,9 @@ const requirementOtherSamples = {
   filmFunding: {
     filmComesUnderOther: "Kannada Industry",
   },
+  fdiLoan: {
+    collateralPropertyTypeOther: "Industrial Property",
+  },
   npaLoan: {
     npaStatusOther: "Suit Filed",
   },
@@ -232,6 +247,7 @@ const requirementOtherSamples = {
   vehicleLoan: {
     vehicleTypeOther: "Tractor",
     transmissionTypeOther: "CVT",
+    fuelTypeOther: "CNG Kit",
     vehiclePurchaseTypeOther: "Lease",
   },
   educationLoan: {
@@ -267,7 +283,10 @@ const buildApplyBody = (config, employmentType) => {
     body.loanAmount = config.loanAmountMin === 1 ? 1000000 : config.loanAmountMin * 10;
   }
   if (config.loanTenureRequired !== false) {
-    body.loanTenure = config.loanTenureMin < 12 ? 60 : config.loanTenureMin * 12;
+    body.loanTenure = Math.min(
+      config.loanTenureMin < 12 ? 60 : config.loanTenureMin * 12,
+      config.loanTenureMax ?? Infinity
+    );
   }
 
   if (config.employmentTypeRequired) body.employmentType = employmentType;
@@ -459,6 +478,7 @@ function adminSlug(config) {
     "/api/od-cc-limit": "od-cc-limits",
     "/api/loan-against-share": "loan-against-shares",
     "/api/film-funding": "film-fundings",
+    "/api/fdi-loan": "fdi-loans",
     "/api/npa-loan": "npa-loans",
     "/api/gold-loan": "gold-loans",
     "/api/lease-rental-discounting": "lease-rental-discountings",
@@ -477,7 +497,7 @@ const collection = {
     name: "Indexia Finance — Loans API",
     _postman_id: "indexia-loans-api-001",
     description:
-      "All loan products (Personal, Business, Home, LAP, Balance Transfer, Project Loan, Vehicle Loan) with apply/list + admin endpoints. Set baseUrl, then run the Auth folder first — it saves {{userToken}} / {{adminToken}} automatically.",
+      "All loan products, including FDI Loan, with apply/list + admin endpoints. Set baseUrl, then run the Auth folder first — it saves {{userToken}} / {{adminToken}} automatically.",
     schema: "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
   },
   item: [

@@ -8,12 +8,16 @@ const { appendUniqueValue } = require("../src/modules/masters/master.service");
 const PersonalLoan = require("../src/modules/loans/personal-loan/personalLoan.model");
 const LoanAgainstProperty = require("../src/modules/loans/loan-against-property/loanAgainstProperty.model");
 const LoanAgainstPropertyController = require("../src/modules/loans/loan-against-property/loanAgainstProperty.controller");
+const FdiLoan = require("../src/modules/loans/fdi-loan/fdiLoan.model");
+const { applyValidator: fdiLoanApplyValidator } = require("../src/modules/loans/fdi-loan/fdiLoan.validator");
+const normalizeFdiTenure = require("../src/modules/loans/fdi-loan/fdiLoan.tenure.middleware");
 const BusinessLoan = require("../src/modules/loans/business-loan/businessLoan.model");
 const HomeLoan = require("../src/modules/loans/home-loan/homeLoan.model");
 const { businessIncomeFields } = require("../src/modules/loans/shared/loanSchema");
 const { getListHandler } = require("../src/modules/loans/shared/adminStatus.service");
 const listBusinessLoans = getListHandler("business-loans");
 const listLoanAgainstProperties = getListHandler("loan-against-properties");
+const listFdiLoans = getListHandler("fdi-loans");
 const BalanceTransfer = require("../src/modules/loans/balance-transfer/balanceTransfer.model");
 const { applyValidator: balanceTransferApplyValidator } = require("../src/modules/loans/balance-transfer/balanceTransfer.validator");
 const ProjectLoan = require("../src/modules/loans/project-loan/projectLoan.model");
@@ -848,6 +852,56 @@ describe("adminApplicationController.listLoanAgainstProperties", () => {
   });
 });
 
+describe("fdiLoan (FDI Fund Requirements)", () => {
+  const fdiLoanPayload = (overrides = {}) =>
+    lapPayload({
+      loanAmount: 1000000000,
+      loanTenure: 120,
+      collateralPropertyType: "Company Valuation",
+      ...overrides,
+    });
+
+  it("passes with FDI details and the shared income, exposure, and personal details", async () => {
+    const result = await runChain(fdiLoanApplyValidator, fdiLoanPayload());
+    expect(result.passed).toBe(true);
+  });
+
+  it("requires at least ₹100 crore in funds", async () => {
+    const result = await runChain(fdiLoanApplyValidator, fdiLoanPayload({ loanAmount: 999999999 }));
+    expect(result.passed).toBe(false);
+  });
+
+  it("requires collateral details and the shared exposure section", async () => {
+    const result = await runChain(
+      fdiLoanApplyValidator,
+      fdiLoanPayload({ collateralPropertyCity: "", existingEMI: undefined })
+    );
+    expect(result.passed).toBe(false);
+  });
+
+  it("normalizes the more-than-10-years option to 11 years (132 months)", () => {
+    const req = { body: { loanTenureYears: "-1" } };
+    normalizeFdiTenure(req, {}, () => {});
+    expect(normalizeApplyPayload(req.body).loanTenure).toBe(132);
+  });
+
+  it("validates a complete FDI application against its model", () => {
+    const doc = new FdiLoan({ user: "64f000000000000000000001", ...fdiLoanPayload() });
+    expect(doc.validateSync()).toBeUndefined();
+  });
+
+  it("registers FDI applications in the admin listing", async () => {
+    jest.spyOn(FdiLoan, "find").mockReturnValue({
+      sort: jest.fn().mockResolvedValue([{ loanType: "FDI Loan", loanAmount: 1000000000 }]),
+    });
+    const res = { status: jest.fn().mockReturnThis(), json: jest.fn() };
+
+    await listFdiLoans({}, res, jest.fn());
+
+    expect(res.json.mock.calls[0][0].loans[0].loanType).toBe("FDI Loan");
+  });
+});
+
 describe("balanceTransfer (Transfer Requirements)", () => {
   const balanceTransferPayload = (overrides = {}) => ({
     loanAmount: 1000000,
@@ -958,6 +1012,7 @@ describe("vehicleLoan (Loan Requirements)", () => {
     loanTenure: 84,
     vehicleType: "SUV",
     transmissionType: "Automatic",
+    fuelType: "Petrol",
     manufacturer: "Hyundai",
     model: "Creta",
     vehiclePurchaseType: "New Vehicle",
@@ -990,6 +1045,7 @@ describe("vehicleLoan (Loan Requirements)", () => {
       vehicleLoanPayload({
         vehicleType: undefined,
         transmissionType: undefined,
+        fuelType: undefined,
         manufacturer: undefined,
         model: undefined,
         vehiclePurchaseType: undefined,
@@ -1002,6 +1058,14 @@ describe("vehicleLoan (Loan Requirements)", () => {
     const result = await runChain(
       vehicleLoanApplyValidator,
       vehicleLoanPayload({ vehicleType: "Other", vehicleTypeOther: "" })
+    );
+    expect(result.passed).toBe(false);
+  });
+
+  it("requires the free-text partner when fuelType is Other", async () => {
+    const result = await runChain(
+      vehicleLoanApplyValidator,
+      vehicleLoanPayload({ fuelType: "Other", fuelTypeOther: "" })
     );
     expect(result.passed).toBe(false);
   });

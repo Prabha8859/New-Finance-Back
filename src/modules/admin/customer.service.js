@@ -1,5 +1,5 @@
 const User = require("../auth/user.model");
-const { MODELS } = require("../loans/shared/adminLoanModels");
+const { MODELS } = require("../loans/shared/loanModels");
 const mongoose = require("mongoose");
 
 /*

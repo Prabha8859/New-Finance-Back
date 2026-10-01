@@ -12,7 +12,7 @@ const { EMPLOYMENT_TYPES } = require("../../../constants/employmentTypes");
  * income:
  *   "salaried"     — only salaried income fields apply        (Personal Loan)
  *   "selfEmployed" — business + professional income fields    (Business Loan)
- *   "employment"   — salaried + business + professional       (Home Loan, LAP)
+ *   "employment"   — salaried + business + professional       (Home Loan, LAP, FDI Loan)
  *
  * loanAmountRequired / loanTenureRequired default to true; the Credit Card
  * product sets both to false because it has no amount or tenure.
@@ -223,6 +223,29 @@ const LOAN_PRODUCTS = {
     // The dashboard offers 1-10 years (+ "More than 10 years").
     loanTenureMin: 3,
     loanTenureMessage: "Select the required tenure (minimum 3 months)",
+    salary: { min: 12001, message: "Monthly net salary must be greater than 12,000" },
+    gstFormat: true,
+    adultApplicant: true,
+    normalizeBankOnResponse: false,
+  },
+
+  fdiLoan: {
+    product: "fdiLoan",
+    loanType: "FDI Loan",
+    loanTypeEnum: ["FDI Loan"],
+    route: "/api/fdi-loan",
+    employmentTypes: EMPLOYMENT_TYPES.home,
+    employmentTypeRequired: true,
+    employmentTypeMessage: "Employment type is invalid",
+    income: "employment",
+    personalDetailsRequired: true,
+    exposureRequired: true,
+    loanRequirements: "fdiLoan",
+    loanAmountMin: 1000000000,
+    loanAmountMessage: "Required fund amount must be at least ₹100 crore",
+    loanTenureMin: 12,
+    loanTenureMax: 132,
+    loanTenureMessage: "Required fund tenure must be between 1 and 11 years",
     salary: { min: 12001, message: "Monthly net salary must be greater than 12,000" },
     gstFormat: true,
     adultApplicant: true,

@@ -13,6 +13,8 @@ const vehicleLoanRequirementFields = {
   vehicleTypeOther: { type: String, trim: true },
   transmissionType: { type: String, trim: true },
   transmissionTypeOther: { type: String, trim: true },
+  fuelType: { type: String, trim: true },
+  fuelTypeOther: { type: String, trim: true },
   manufacturer: { type: String, trim: true },
   model: { type: String, trim: true },
   vehiclePurchaseType: { type: String, trim: true },

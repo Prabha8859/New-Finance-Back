@@ -15,6 +15,7 @@ const { commercialPurchaseRequirementRules } = require("../commercial-purchase/c
 const { leaseRentalDiscountingRequirementRules } = require("../lease-rental-discounting/leaseRentalDiscounting.requirements.rules");
 const { loanAgainstShareRequirementRules } = require("../loan-against-share/loanAgainstShare.requirements.rules");
 const { filmFundingRequirementRules } = require("../film-funding/filmFunding.requirements.rules");
+const { fdiLoanRequirementRules } = require("../fdi-loan/fdiLoan.requirements.rules");
 const { npaLoanRequirementRules } = require("../npa-loan/npaLoan.requirements.rules");
 const { goldLoanRequirementRules } = require("../gold-loan/goldLoan.requirements.rules");
 const { lapRequirementRules } = require("../loan-against-property/loanAgainstProperty.requirements.rules");
@@ -67,6 +68,7 @@ const requirementRules = {
   leaseRentalDiscounting: leaseRentalDiscountingRequirementRules,
   loanAgainstShare: loanAgainstShareRequirementRules,
   filmFunding: filmFundingRequirementRules,
+  fdiLoan: fdiLoanRequirementRules,
   npaLoan: npaLoanRequirementRules,
   goldLoan: goldLoanRequirementRules,
   collateralProperty: lapRequirementRules,

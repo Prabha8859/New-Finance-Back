@@ -24,6 +24,13 @@ const vehicleLoanRequirementRules = () => [
     .withMessage("Please select the transmission type"),
   otherIf("transmissionType", "transmissionTypeOther", "Please mention the transmission type"),
 
+  body("fuelType")
+    .optional({ values: "falsy" })
+    .trim()
+    .notEmpty()
+    .withMessage("Please select the fuel type"),
+  otherIf("fuelType", "fuelTypeOther", "Please mention the fuel type"),
+
   body("manufacturer")
     .optional({ values: "falsy" })
     .trim()

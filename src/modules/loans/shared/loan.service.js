@@ -10,10 +10,6 @@ const {
   incomeFieldNamesForEmploymentType,
 } = require("./loanSchema");
 const {
-  SETTABLE_STATUSES,
-  canTransition,
-} = require("./loanStatus");
-const {
   toBankNames,
   displayNameForBanks,
   normalizeTransactionBanks,
@@ -58,7 +54,10 @@ shows them:
 */
 const sectionFieldNames = (config, employmentType) => ({
   loanRequirements: [
-    ...LOAN_FIELD_NAMES,
+    // Products without an amount/tenure (Credit Card, NPA Loan) set the
+    // matching required flag to false — those fields then never appear here.
+    ...(config.loanAmountRequired !== false ? ["loanAmount"] : []),
+    ...(config.loanTenureRequired !== false ? ["loanTenure"] : []),
     ...(config.loanRequirements ? loanRequirementFieldNames[config.loanRequirements] : []),
   ],
   incomeDetails: ["employmentType", ...incomeFieldNamesForEmploymentType(employmentType)],
@@ -69,9 +68,11 @@ const sectionFieldNames = (config, employmentType) => ({
 /*
 Builds the section-wise view of a saved application.
 
-Every expected field IS present — a field the applicant never sent comes back
-as `null` instead of disappearing, so while testing you can tell at a glance
-which field is missing from which section.
+Sections list ONLY the fields the applicant actually filled, in dashboard
+order. A field that was never sent is omitted (not shown as `null`), and an
+"Other" free-text partner is hidden until it has a value — so the response
+stays clean and every key that IS present carries real data. All four
+section keys always exist (an untouched section is just `{}`).
 */
 /*
 Server-managed helpers that are copied from the config but never belong to an
@@ -84,6 +85,12 @@ in a saved application and must not show up as a perpetually-null entry.
 */
 const SECTION_EXCLUDED_FIELDS = new Set(["transactionBankDisplayName", "transactionBankOther"]);
 
+const isEmptyValue = (value) =>
+  value === undefined ||
+  value === null ||
+  value === "" ||
+  (Array.isArray(value) && value.length === 0);
+
 const buildSections = (data, config, employmentType) => {
   const sections = {};
 
@@ -93,7 +100,9 @@ const buildSections = (data, config, employmentType) => {
     fields
       .filter((field) => !SECTION_EXCLUDED_FIELDS.has(field))
       .forEach((field) => {
-        values[field] = data[field] === undefined ? null : data[field];
+        const value = data[field];
+        if (isEmptyValue(value)) return; // never sent / empty -> omit
+        values[field] = value;
       });
 
     sections[section] = values;
@@ -150,9 +159,6 @@ const buildLoanDocument = (productKey, body, userId) => {
   dataFieldNames(config, employmentType).forEach((field) => {
     if (source[field] !== undefined) data[field] = source[field];
   });
-
-  data.user = userId;
-  data.loanType = config.loanType;
 
   // Trim every string so stored values are clean whatever the client sends.
   Object.keys(data).forEach((field) => {
@@ -260,7 +266,4 @@ module.exports = {
   createLoanController,
   buildLoanDocument,
   sanitizeLoanResponse,
-  MODELS,
-  SETTABLE_STATUSES,
-  canTransition,
 };

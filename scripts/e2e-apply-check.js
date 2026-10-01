@@ -25,6 +25,7 @@ const LeaseRentalDiscounting = require("../src/modules/loans/lease-rental-discou
 const OdCcLimit = require("../src/modules/loans/od-cc-limit/odCcLimit.model");
 const LoanAgainstShare = require("../src/modules/loans/loan-against-share/loanAgainstShare.model");
 const FilmFunding = require("../src/modules/loans/film-funding/filmFunding.model");
+const FdiLoan = require("../src/modules/loans/fdi-loan/fdiLoan.model");
 const NpaLoan = require("../src/modules/loans/npa-loan/npaLoan.model");
 const GoldLoan = require("../src/modules/loans/gold-loan/goldLoan.model");
 const Admin = require("../src/modules/admin/admin.model");
@@ -422,6 +423,7 @@ const cases = [
       loanTenureYears: 7,
       vehicleType: "SUV",
       transmissionType: "Automatic",
+      fuelType: "Petrol",
       manufacturer: "Hyundai",
       model: "Creta",
       vehiclePurchaseType: "New Vehicle",
@@ -1266,6 +1268,50 @@ const cases = [
       return true;
     },
   },
+  {
+    name: "54. FDI LOAN / Salaried (100 Cr minimum + more-than-10-years option)",
+    path: "/api/fdi-loan/apply",
+    expect: 201,
+    check: (body) =>
+      body.data.loanTenure === 132 &&
+      body.data.collateralPropertyType === "Industrial Property" &&
+      body.data.sections?.loanRequirements?.collateralPropertyMarketValue === 1000000000
+        ? true
+        : `loanTenure=${body.data?.loanTenure}, collateralPropertyType=${body.data?.collateralPropertyType}`,
+    body: {
+      loanAmount: 1000000000,
+      loanTenureYears: -1,
+      collateralPropertyType: "Other",
+      collateralPropertyTypeOther: "Industrial Property",
+      collateralPropertyMarketValue: 1000000000,
+      collateralPropertyAge: 5,
+      collateralPropertyState: "Maharashtra",
+      collateralPropertyCity: "Pune",
+      collateralPropertyPincode: "411001",
+      employmentType: "Salaried",
+      companyName: "ABC Corp",
+      companyType: "Private Limited",
+      monthlyNetSalary: 75000,
+      salaryReceivedAs: "Bank Transfer",
+      salaryBankName: "HDFC Bank",
+      ...personal,
+    },
+  },
+  {
+    name: "55. FDI LOAN / list endpoint (requirements + shared sections)",
+    path: "/api/fdi-loan/applications",
+    method: "GET",
+    expect: 200,
+    check: (body) => {
+      const item = body.data.find((application) => application.loanType === "FDI Loan");
+      if (!item) return "no FDI loan application in list";
+      if (item.loanTenure !== 132) return `loanTenure=${item.loanTenure}`;
+      if (!item.sections?.incomeDetails || !item.sections?.existingLoanExposure || !item.sections?.personalDetails) {
+        return "shared loan sections missing from response";
+      }
+      return true;
+    },
+  },
 ];
 
 const run = async () => {
@@ -1659,6 +1705,33 @@ const run = async () => {
     });
   }
 
+  const adminFdiListRes = await fetch(`${BASE}/api/admin/fdi-loans`, { headers: adminHeaders });
+  const adminFdiListBody = await adminFdiListRes.json().catch(() => ({}));
+  const adminFdiListOk = adminFdiListRes.status === 200 && Array.isArray(adminFdiListBody.data);
+  results.push({
+    name: "ADMIN / list FDI loans",
+    status: adminFdiListRes.status,
+    ok: adminFdiListOk,
+    detail: adminFdiListOk ? "" : JSON.stringify(adminFdiListBody).slice(0, 200),
+  });
+
+  const [fdiApplication] = await FdiLoan.find({ user: user._id }).limit(1);
+  if (fdiApplication) {
+    const fdiByIdRes = await fetch(`${BASE}/api/admin/fdi-loans/${fdiApplication._id}`, { headers: adminHeaders });
+    const fdiByIdBody = await fdiByIdRes.json().catch(() => ({}));
+    const fdiByIdOk =
+      fdiByIdRes.status === 200 &&
+      fdiByIdBody.data &&
+      fdiByIdBody.data.loanType === "FDI Loan" &&
+      fdiByIdBody.data.collateralPropertyType === "Industrial Property";
+    results.push({
+      name: "ADMIN / get FDI loan by id",
+      status: fdiByIdRes.status,
+      ok: fdiByIdOk,
+      detail: fdiByIdOk ? "" : JSON.stringify(fdiByIdBody).slice(0, 200),
+    });
+  }
+
   await HomeLoan.deleteMany({ user: user._id });
   await BusinessLoan.deleteMany({ user: user._id });
   await PersonalLoan.deleteMany({ user: user._id });
@@ -1676,6 +1749,7 @@ const run = async () => {
   await FilmFunding.deleteMany({ user: user._id });
   await NpaLoan.deleteMany({ user: user._id });
   await GoldLoan.deleteMany({ user: user._id });
+  await FdiLoan.deleteMany({ user: user._id });
   await User.deleteOne({ _id: user._id });
   await Admin.deleteOne({ _id: admin._id });
 

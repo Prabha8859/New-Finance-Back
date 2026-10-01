@@ -54,6 +54,7 @@ app.use("/api/working-capital", require("./modules/loans/working-capital/working
 app.use("/api/od-cc-limit", require("./modules/loans/od-cc-limit/odCcLimit.routes"));
 app.use("/api/lease-rental-discounting", require("./modules/loans/lease-rental-discounting/leaseRentalDiscounting.routes"));
 app.use("/api/film-funding", require("./modules/loans/film-funding/filmFunding.routes"));
+app.use("/api/fdi-loan", require("./modules/loans/fdi-loan/fdiLoan.routes"));
 app.use("/api/npa-loan", require("./modules/loans/npa-loan/npaLoan.routes"));
 app.use("/api/gold-loan", require("./modules/loans/gold-loan/goldLoan.routes"));
 app.use("/api/loan-against-share", require("./modules/loans/loan-against-share/loanAgainstShare.routes"));

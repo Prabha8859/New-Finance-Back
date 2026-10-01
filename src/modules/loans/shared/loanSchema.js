@@ -30,10 +30,12 @@ const { homeLoanRequirementFields } = require("../home-loan/homeLoan.requirement
 const { commercialPurchaseRequirementFields } = require("../commercial-purchase/commercialPurchase.requirements.schema");
 const { leaseRentalDiscountingRequirementFields } = require("../lease-rental-discounting/leaseRentalDiscounting.requirements.schema");
 const { filmFundingRequirementFields } = require("../film-funding/filmFunding.requirements.schema");
+const { fdiLoanRequirementFields } = require("../fdi-loan/fdiLoan.requirements.schema");
 const { npaLoanRequirementFields } = require("../npa-loan/npaLoan.requirements.schema");
 const { goldLoanRequirementFields } = require("../gold-loan/goldLoan.requirements.schema");
 const { loanAgainstShareRequirementFields } = require("../loan-against-share/loanAgainstShare.requirements.schema");
 const { lapRequirementFields } = require("../loan-against-property/loanAgainstProperty.requirements.schema");
+
 const { balanceTransferRequirementFields } = require("../balance-transfer/balanceTransfer.requirements.schema");
 const { projectLoanRequirementFields } = require("../project-loan/projectLoan.requirements.schema");
 const { vehicleLoanRequirementFields } = require("../vehicle-loan/vehicleLoan.requirements.schema");
@@ -66,6 +68,7 @@ const { creditCardRequirementFields } = require("../credit-card/creditCard.requi
  *   ../lease-rental-discounting/leaseRentalDiscounting.requirements.schema.js -> Lease Rental Discounting
  *   ../loan-against-share/loanAgainstShare.requirements.schema.js       -> Loan Against Share
  *   ../film-funding/filmFunding.requirements.schema.js                  -> Film Funding
+ *   ../fdi-loan/fdiLoan.requirements.schema.js                          -> FDI Loan
  *   ../npa-loan/npaLoan.requirements.schema.js                          -> NPA Loan
  *   ../gold-loan/goldLoan.requirements.schema.js                        -> Gold Loan
  *   ../loan-against-property/loanAgainstProperty.requirements.schema.js -> Loan Against Property
@@ -100,6 +103,7 @@ const loanRequirementSections = {
   leaseRentalDiscounting: leaseRentalDiscountingRequirementFields,
   loanAgainstShare: loanAgainstShareRequirementFields,
   filmFunding: filmFundingRequirementFields,
+  fdiLoan: fdiLoanRequirementFields,
   npaLoan: npaLoanRequirementFields,
   goldLoan: goldLoanRequirementFields,
   collateralProperty: lapRequirementFields,
@@ -117,6 +121,7 @@ const loanRequirementFieldNames = {
   leaseRentalDiscounting: Object.keys(leaseRentalDiscountingRequirementFields),
   loanAgainstShare: Object.keys(loanAgainstShareRequirementFields),
   filmFunding: Object.keys(filmFundingRequirementFields),
+  fdiLoan: Object.keys(fdiLoanRequirementFields),
   npaLoan: Object.keys(npaLoanRequirementFields),
   goldLoan: Object.keys(goldLoanRequirementFields),
   collateralProperty: Object.keys(lapRequirementFields),

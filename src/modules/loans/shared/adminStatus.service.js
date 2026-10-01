@@ -1,15 +1,14 @@
-const mongoose = require("mongoose");
-
 /*
 ==========================================
 Admin loan application endpoints.
 
-ONE registry drives every product so the 14 resources never drift apart:
+ONE registry drives every product so the application resources never drift apart:
 
   RESOURCE_ROUTES  -> route -> { productKey, model, label, exportName }
   getListHandler   -> GET    /api/admin/{resource}
   getByIdHandler   -> GET    /api/admin/{resource}/:id
   updateStatusHandler -> PATCH /api/admin/{resource}/:id/status
+  deleteApplicationHandler -> DELETE /api/admin/{resource}/:id
 
 Status rules live in ./loanStatus.js — transitions are enforced and every
 decision stamps approvedBy/approvedAt (or rejectedAt) + adminNote.
@@ -31,20 +30,91 @@ const notFound = (message) => {
 };
 
 const RESOURCE_ROUTES = {
-  "personal-loans": { productKey: "personal", label: "Personal loan", exportName: "PersonalLoans" },
-  "business-loans": { productKey: "business", label: "Business loan", exportName: "BusinessLoans" },
-  "home-loans": { productKey: "home", label: "Home loan", exportName: "HomeLoans" },
-  "loan-against-properties": { productKey: "lap", label: "Loan against property", exportName: "LoanAgainstProperties" },
-  "balance-transfers": { productKey: "balanceTransfer", label: "Balance transfer", exportName: "BalanceTransfers" },
-  "project-loans": { productKey: "projectLoan", label: "Project loan", exportName: "ProjectLoans" },
-  "vehicle-loans": { productKey: "vehicleLoan", label: "Vehicle loan", exportName: "VehicleLoans" },
-  "education-loans": { productKey: "educationLoan", label: "Education loan", exportName: "EducationLoans" },
-  "credit-cards": { productKey: "creditCard", label: "Credit card", exportName: "CreditCards" },
-  "working-capitals": { productKey: "workingCapital", label: "Working capital", exportName: "WorkingCapitals" },
-  "commercial-purchases": { productKey: "commercialPurchase", label: "Commercial purchase", exportName: "CommercialPurchases" },
-  "lease-rental-discountings": { productKey: "leaseRentalDiscounting", label: "Lease rental discounting", exportName: "LeaseRentalDiscountings" },
-  "od-cc-limits": { productKey: "odCcLimit", label: "OD / CC limit", exportName: "OdCcLimits" },
-  "loan-against-shares": { productKey: "loanAgainstShare", label: "Loan against share", exportName: "LoanAgainstShares" },
+  "personal-loans": {
+    productKey: "personal",
+    label: "Personal loan",
+    exportName: "PersonalLoans",
+  },
+  "business-loans": {
+    productKey: "business",
+    label: "Business loan",
+    exportName: "BusinessLoans",
+  },
+  "home-loans": {
+    productKey: "home",
+    label: "Home loan",
+    exportName: "HomeLoans",
+  },
+  "loan-against-properties": {
+    productKey: "lap",
+    label: "Loan against property",
+    exportName: "LoanAgainstProperties",
+  },
+  "balance-transfers": {
+    productKey: "balanceTransfer",
+    label: "Balance transfer",
+    exportName: "BalanceTransfers",
+  },
+  "project-loans": {
+    productKey: "projectLoan",
+    label: "Project loan",
+    exportName: "ProjectLoans",
+  },
+  "vehicle-loans": {
+    productKey: "vehicleLoan",
+    label: "Vehicle loan",
+    exportName: "VehicleLoans",
+  },
+  "education-loans": {
+    productKey: "educationLoan",
+    label: "Education loan",
+    exportName: "EducationLoans",
+  },
+  "credit-cards": {
+    productKey: "creditCard",
+    label: "Credit card",
+    exportName: "CreditCards",
+  },
+  "working-capitals": {
+    productKey: "workingCapital",
+    label: "Working capital",
+    exportName: "WorkingCapitals",
+  },
+  "commercial-purchases": {
+    productKey: "commercialPurchase",
+    label: "Commercial purchase",
+    exportName: "CommercialPurchases",
+  },
+  "lease-rental-discountings": {
+    productKey: "leaseRentalDiscounting",
+    label: "Lease rental discounting",
+    exportName: "LeaseRentalDiscountings",
+  },
+  "od-cc-limits": {
+    productKey: "odCcLimit",
+    label: "OD / CC limit",
+    exportName: "OdCcLimits",
+  },
+  "loan-against-shares": {
+    productKey: "loanAgainstShare",
+    label: "Loan against share",
+    exportName: "LoanAgainstShares",
+  },
+  "npa-loans": {
+    productKey: "npaLoan",
+    label: "NPA loan",
+    exportName: "NpaLoans",
+  },
+  "gold-loans": {
+    productKey: "goldLoan",
+    label: "Gold loan",
+    exportName: "GoldLoans",
+  },
+  "fdi-loans": {
+    productKey: "fdiLoan",
+    label: "FDI loan",
+    exportName: "FdiLoans",
+  },
 };
 
 const isValidObjectId = (value) =>
@@ -76,12 +146,43 @@ const getByIdHandler = (resource) => async (req, res, next) => {
     const Model = modelFor(resource);
     if (!Model) throw notFound("Unknown application type");
 
-    if (!isValidObjectId(req.params.id)) throw notFound("Application not found");
+    if (!isValidObjectId(req.params.id))
+      throw notFound("Application not found");
 
     const application = await Model.findById(req.params.id);
-    if (!application) throw notFound(`${labelFor(resource)} application not found`);
+    if (!application)
+      throw notFound(`${labelFor(resource)} application not found`);
 
     res.status(200).json({ success: true, loan: application });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * DELETE /api/admin/{resource}/:id — permanently removes one application.
+ * Unknown resource/id -> 404. The customer's OTHER applications are untouched
+ * (use the customer delete flow to wipe every application of one customer).
+ */
+const deleteApplicationHandler = (resource) => async (req, res, next) => {
+  try {
+    const Model = modelFor(resource);
+    if (!Model) throw notFound("Unknown application type");
+
+    if (!isValidObjectId(req.params.id))
+      throw notFound("Application not found");
+
+    const application = await Model.findById(req.params.id);
+    if (!application)
+      throw notFound(`${labelFor(resource)} application not found`);
+
+    await application.deleteOne();
+
+    res.json({
+      success: true,
+      message: `${labelFor(resource)} application deleted`,
+      deletedId: application._id,
+    });
   } catch (error) {
     next(error);
   }
@@ -105,18 +206,23 @@ const updateStatusHandler = (resource) => async (req, res, next) => {
 
     if (!status) throw badRequest("Status is required");
     if (!SETTABLE_STATUSES.includes(status)) {
-      throw badRequest(`Status must be one of: ${SETTABLE_STATUSES.join(", ")}`);
+      throw badRequest(
+        `Status must be one of: ${SETTABLE_STATUSES.join(", ")}`,
+      );
     }
 
-    const noteText = note === undefined || note === null ? "" : String(note).trim();
+    const noteText =
+      note === undefined || note === null ? "" : String(note).trim();
     if (noteText.length > 500) {
       throw badRequest("Note is too long (max 500 characters)");
     }
 
-    if (!isValidObjectId(req.params.id)) throw notFound("Application not found");
+    if (!isValidObjectId(req.params.id))
+      throw notFound("Application not found");
 
     const application = await Model.findById(req.params.id);
-    if (!application) throw notFound(`${labelFor(resource)} application not found`);
+    if (!application)
+      throw notFound(`${labelFor(resource)} application not found`);
 
     const currentStatus = application.status || "Submitted";
 
@@ -168,20 +274,30 @@ const listCustomerApplications = async (req, res, next) => {
   try {
     const customerId = req.params.id;
     if (!isValidObjectId(customerId)) {
-      return res.status(404).json({ success: false, message: "Customer not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Customer not found" });
     }
 
     const customer = await User.findById(customerId);
     if (!customer) {
-      return res.status(404).json({ success: false, message: "Customer not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Customer not found" });
     }
 
     const groups = await Promise.all(
       Object.entries(MODELS).map(async ([productKey, Model]) => {
-        const applications = await Model.find({ user: customerId }).sort({ createdAt: -1 });
+        const applications = await Model.find({ user: customerId }).sort({
+          createdAt: -1,
+        });
         if (!applications.length) return null;
-        return { product: productKey, count: applications.length, applications };
-      })
+        return {
+          product: productKey,
+          count: applications.length,
+          applications,
+        };
+      }),
     );
 
     const data = groups.filter(Boolean);
@@ -189,7 +305,12 @@ const listCustomerApplications = async (req, res, next) => {
 
     res.json({
       success: true,
-      customer: { _id: customer._id, name: customer.name, email: customer.email, mobile: customer.mobile },
+      customer: {
+        _id: customer._id,
+        name: customer.name,
+        email: customer.email,
+        mobile: customer.mobile,
+      },
       total,
       data,
     });
@@ -219,6 +340,7 @@ module.exports = {
   getListHandler,
   getByIdHandler,
   updateStatusHandler,
+  deleteApplicationHandler,
   listCustomerApplications,
   countApplicationsByProduct,
   isValidObjectId,

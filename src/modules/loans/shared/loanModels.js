@@ -8,6 +8,7 @@ const OdCcLimit = require("../od-cc-limit/odCcLimit.model");
 const LeaseRentalDiscounting = require("../lease-rental-discounting/leaseRentalDiscounting.model");
 const LoanAgainstShare = require("../loan-against-share/loanAgainstShare.model");
 const FilmFunding = require("../film-funding/filmFunding.model");
+const FdiLoan = require("../fdi-loan/fdiLoan.model");
 const NpaLoan = require("../npa-loan/npaLoan.model");
 const GoldLoan = require("../gold-loan/goldLoan.model");
 const BalanceTransfer = require("../balance-transfer/balanceTransfer.model");
@@ -37,6 +38,7 @@ const MODELS = {
   leaseRentalDiscounting: LeaseRentalDiscounting,
   loanAgainstShare: LoanAgainstShare,
   filmFunding: FilmFunding,
+  fdiLoan: FdiLoan,
   npaLoan: NpaLoan,
   goldLoan: GoldLoan,
   balanceTransfer: BalanceTransfer,

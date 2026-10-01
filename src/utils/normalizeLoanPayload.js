@@ -49,6 +49,7 @@ const OTHER_FIELD_PAIRS = [
   ["projectType", "projectTypeOther"],
   ["vehicleType", "vehicleTypeOther"],
   ["transmissionType", "transmissionTypeOther"],
+  ["fuelType", "fuelTypeOther"],
   ["vehiclePurchaseType", "vehiclePurchaseTypeOther"],
   ["educationCountry", "educationCountryOther"],
   ["fieldOfStudy", "fieldOfStudyOther"],

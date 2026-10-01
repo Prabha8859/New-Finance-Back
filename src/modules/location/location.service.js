@@ -44,6 +44,8 @@ const badRequest = (message) => {
   return error;
 };
 
+
+
 const notFound = (message) => {
   const error = new Error(message);
   error.statusCode = 404;
@@ -1095,6 +1097,5 @@ module.exports = {
   create,
   update,
   remove,
-  /* exported for tests / other modules that need the hierarchy */
   models: { Continent, Country, State, City, Pincode },
 };

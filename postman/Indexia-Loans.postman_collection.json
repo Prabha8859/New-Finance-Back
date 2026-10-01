@@ -2,7 +2,7 @@
   "info": {
     "name": "Indexia Finance — Loans API",
     "_postman_id": "indexia-loans-api-001",
-    "description": "All loan products (Personal, Business, Home, LAP, Balance Transfer, Project Loan, Vehicle Loan) with apply/list + admin endpoints. Set baseUrl, then run the Auth folder first — it saves {{userToken}} / {{adminToken}} automatically.",
+    "description": "All loan products, including FDI Loan, with apply/list + admin endpoints. Set baseUrl, then run the Auth folder first — it saves {{userToken}} / {{adminToken}} automatically.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -2379,6 +2379,285 @@
       ]
     },
     {
+      "name": "FDI Loan",
+      "item": [
+        {
+          "name": "Apply — Salaried",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"loanAmount\": 10000000000,\n  \"loanTenure\": 132,\n  \"employmentType\": \"Salaried\",\n  \"collateralPropertyType\": \"Company Valuation\",\n  \"collateralPropertyTypeOther\": \"\",\n  \"collateralPropertyMarketValue\": 1000000000,\n  \"collateralPropertyAge\": 5,\n  \"collateralPropertyState\": \"Maharashtra\",\n  \"collateralPropertyCity\": \"Pune\",\n  \"collateralPropertyPincode\": \"411001\",\n  \"collateralPropertyPincodeOther\": \"\",\n  \"companyName\": \"ABC Corp\",\n  \"companyType\": \"Private Limited\",\n  \"companyTypeOther\": \"\",\n  \"monthlySalary\": 75000,\n  \"salaryReceivedAs\": \"Bank Transfer\",\n  \"salaryReceivedAsOther\": \"\",\n  \"salaryBankName\": \"HDFC Bank\",\n  \"salaryBankOther\": \"\",\n  \"fullName\": \"Rahul Sharma\",\n  \"mobile\": \"9876543210\",\n  \"email\": \"rahul@example.com\",\n  \"dob\": \"1992-06-15\",\n  \"panNumber\": \"ABCDE1234F\",\n  \"state\": \"Maharashtra\",\n  \"city\": \"Pune\",\n  \"pincode\": \"411001\",\n  \"residenceStatus\": \"Owned\",\n  \"existingEMI\": 0,\n  \"existingLoanAmount\": 0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/fdi-loan/apply",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "fdi-loan",
+                "apply"
+              ]
+            },
+            "description": "Apply for FDI Loan as Salaried."
+          }
+        },
+        {
+          "name": "Apply — Self Employed Business",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"loanAmount\": 10000000000,\n  \"loanTenure\": 132,\n  \"employmentType\": \"Self Employed - Business\",\n  \"collateralPropertyType\": \"Company Valuation\",\n  \"collateralPropertyTypeOther\": \"\",\n  \"collateralPropertyMarketValue\": 1000000000,\n  \"collateralPropertyAge\": 5,\n  \"collateralPropertyState\": \"Maharashtra\",\n  \"collateralPropertyCity\": \"Pune\",\n  \"collateralPropertyPincode\": \"411001\",\n  \"collateralPropertyPincodeOther\": \"\",\n  \"businessType\": \"Proprietorship\",\n  \"businessTypeOther\": \"\",\n  \"businessName\": \"Aarav Traders\",\n  \"gstNumber\": \"\",\n  \"companyPanNumber\": \"ABCDE1234F\",\n  \"natureOfBusiness\": \"Retail\",\n  \"natureOfBusinessOther\": \"\",\n  \"industryType\": \"Trading\",\n  \"industryTypeOther\": \"\",\n  \"subIndustry\": \"\",\n  \"businessEstablishedDate\": \"2018-05-12\",\n  \"lastYearTurnover\": 2500000,\n  \"last2YearsTurnover\": 2300000,\n  \"lastYearNetIncome\": 350000,\n  \"last2YearsNetIncome\": 300000,\n  \"businessState\": \"Maharashtra\",\n  \"businessCity\": \"Pune\",\n  \"businessPincode\": \"411001\",\n  \"businessPincodeOther\": \"\",\n  \"businessPlaceStatus\": \"Owned\",\n  \"businessPlaceStatusOther\": \"\",\n  \"transactionBankName\": \"Multiple Transaction Banks\",\n  \"transactionBanks\": [\n    \"HDFC Bank\",\n    \"State Bank of India\",\n    \"ICICI Bank\"\n  ],\n  \"fullName\": \"Rahul Sharma\",\n  \"mobile\": \"9876543210\",\n  \"email\": \"rahul@example.com\",\n  \"dob\": \"1992-06-15\",\n  \"panNumber\": \"ABCDE1234F\",\n  \"state\": \"Maharashtra\",\n  \"city\": \"Pune\",\n  \"pincode\": \"411001\",\n  \"residenceStatus\": \"Owned\",\n  \"existingEMI\": 0,\n  \"existingLoanAmount\": 0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/fdi-loan/apply",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "fdi-loan",
+                "apply"
+              ]
+            },
+            "description": "Apply for FDI Loan as Self Employed - Business."
+          }
+        },
+        {
+          "name": "Apply — Self Employed Professional",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"loanAmount\": 10000000000,\n  \"loanTenure\": 132,\n  \"employmentType\": \"Self Employed - Professional\",\n  \"collateralPropertyType\": \"Company Valuation\",\n  \"collateralPropertyTypeOther\": \"\",\n  \"collateralPropertyMarketValue\": 1000000000,\n  \"collateralPropertyAge\": 5,\n  \"collateralPropertyState\": \"Maharashtra\",\n  \"collateralPropertyCity\": \"Pune\",\n  \"collateralPropertyPincode\": \"411001\",\n  \"collateralPropertyPincodeOther\": \"\",\n  \"profession\": \"Doctor\",\n  \"professionOther\": \"\",\n  \"currentYearTurnover\": 500000,\n  \"priorYearTurnover\": 450000,\n  \"currentYearNetIncome\": 70000,\n  \"previousYearNetIncome\": 65000,\n  \"businessState\": \"Maharashtra\",\n  \"businessCity\": \"Pune\",\n  \"businessPincode\": \"411001\",\n  \"businessPincodeOther\": \"\",\n  \"businessPlaceStatus\": \"Owned\",\n  \"businessPlaceStatusOther\": \"\",\n  \"transactionBankName\": \"Multiple Transaction Banks\",\n  \"transactionBanks\": [\n    \"HDFC Bank\",\n    \"State Bank of India\",\n    \"ICICI Bank\"\n  ],\n  \"fullName\": \"Rahul Sharma\",\n  \"mobile\": \"9876543210\",\n  \"email\": \"rahul@example.com\",\n  \"dob\": \"1992-06-15\",\n  \"panNumber\": \"ABCDE1234F\",\n  \"state\": \"Maharashtra\",\n  \"city\": \"Pune\",\n  \"pincode\": \"411001\",\n  \"residenceStatus\": \"Owned\",\n  \"existingEMI\": 0,\n  \"existingLoanAmount\": 0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/fdi-loan/apply",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "fdi-loan",
+                "apply"
+              ]
+            },
+            "description": "Apply for FDI Loan as Self Employed - Professional."
+          }
+        },
+        {
+          "name": "Apply — Other type (Other + free text)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"loanAmount\": 10000000000,\n  \"loanTenure\": 132,\n  \"employmentType\": \"Salaried\",\n  \"collateralPropertyType\": \"Other\",\n  \"collateralPropertyTypeOther\": \"Industrial Property\",\n  \"collateralPropertyMarketValue\": 1000000000,\n  \"collateralPropertyAge\": 5,\n  \"collateralPropertyState\": \"Maharashtra\",\n  \"collateralPropertyCity\": \"Pune\",\n  \"collateralPropertyPincode\": \"411001\",\n  \"collateralPropertyPincodeOther\": \"\",\n  \"companyName\": \"ABC Corp\",\n  \"companyType\": \"Private Limited\",\n  \"companyTypeOther\": \"\",\n  \"monthlySalary\": 75000,\n  \"salaryReceivedAs\": \"Bank Transfer\",\n  \"salaryReceivedAsOther\": \"\",\n  \"salaryBankName\": \"HDFC Bank\",\n  \"salaryBankOther\": \"\",\n  \"fullName\": \"Rahul Sharma\",\n  \"mobile\": \"9876543210\",\n  \"email\": \"rahul@example.com\",\n  \"dob\": \"1992-06-15\",\n  \"panNumber\": \"ABCDE1234F\",\n  \"state\": \"Maharashtra\",\n  \"city\": \"Pune\",\n  \"pincode\": \"411001\",\n  \"residenceStatus\": \"Owned\",\n  \"existingEMI\": 0,\n  \"existingLoanAmount\": 0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/fdi-loan/apply",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "fdi-loan",
+                "apply"
+              ]
+            },
+            "description": "Selects \"Other\" in the requirement dropdown and sends the free-text partner field."
+          }
+        },
+        {
+          "name": "Apply — Multiple transaction banks (object form)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"loanAmount\": 10000000000,\n  \"loanTenure\": 132,\n  \"employmentType\": \"Salaried\",\n  \"collateralPropertyType\": \"Company Valuation\",\n  \"collateralPropertyTypeOther\": \"\",\n  \"collateralPropertyMarketValue\": 1000000000,\n  \"collateralPropertyAge\": 5,\n  \"collateralPropertyState\": \"Maharashtra\",\n  \"collateralPropertyCity\": \"Pune\",\n  \"collateralPropertyPincode\": \"411001\",\n  \"collateralPropertyPincodeOther\": \"\",\n  \"companyName\": \"ABC Corp\",\n  \"companyType\": \"Private Limited\",\n  \"companyTypeOther\": \"\",\n  \"monthlySalary\": 75000,\n  \"salaryReceivedAs\": \"Bank Transfer\",\n  \"salaryReceivedAsOther\": \"\",\n  \"salaryBankName\": \"HDFC Bank\",\n  \"salaryBankOther\": \"\",\n  \"fullName\": \"Rahul Sharma\",\n  \"mobile\": \"9876543210\",\n  \"email\": \"rahul@example.com\",\n  \"dob\": \"1992-06-15\",\n  \"panNumber\": \"ABCDE1234F\",\n  \"state\": \"Maharashtra\",\n  \"city\": \"Pune\",\n  \"pincode\": \"411001\",\n  \"residenceStatus\": \"Owned\",\n  \"existingEMI\": 0,\n  \"existingLoanAmount\": 0,\n  \"transactionBankName\": {\n    \"displayName\": \"Multiple Transaction Banks\",\n    \"banks\": [\n      \"HDFC Bank\",\n      \"State Bank of India\",\n      \"ICICI Bank\"\n    ]\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/fdi-loan/apply",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "fdi-loan",
+                "apply"
+              ]
+            },
+            "description": "Canonical multi-bank object form — same result as transactionBanks array."
+          }
+        },
+        {
+          "name": "Apply — Other transaction bank (free-text fallback)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"loanAmount\": 10000000000,\n  \"loanTenure\": 132,\n  \"employmentType\": \"Salaried\",\n  \"collateralPropertyType\": \"Company Valuation\",\n  \"collateralPropertyTypeOther\": \"\",\n  \"collateralPropertyMarketValue\": 1000000000,\n  \"collateralPropertyAge\": 5,\n  \"collateralPropertyState\": \"Maharashtra\",\n  \"collateralPropertyCity\": \"Pune\",\n  \"collateralPropertyPincode\": \"411001\",\n  \"collateralPropertyPincodeOther\": \"\",\n  \"companyName\": \"ABC Corp\",\n  \"companyType\": \"Private Limited\",\n  \"companyTypeOther\": \"\",\n  \"monthlySalary\": 75000,\n  \"salaryReceivedAs\": \"Bank Transfer\",\n  \"salaryReceivedAsOther\": \"\",\n  \"salaryBankName\": \"HDFC Bank\",\n  \"salaryBankOther\": \"\",\n  \"fullName\": \"Rahul Sharma\",\n  \"mobile\": \"9876543210\",\n  \"email\": \"rahul@example.com\",\n  \"dob\": \"1992-06-15\",\n  \"panNumber\": \"ABCDE1234F\",\n  \"state\": \"Maharashtra\",\n  \"city\": \"Pune\",\n  \"pincode\": \"411001\",\n  \"residenceStatus\": \"Owned\",\n  \"existingEMI\": 0,\n  \"existingLoanAmount\": 0,\n  \"transactionBankName\": \"Other\",\n  \"transactionBankOther\": \"Yes Bank\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/fdi-loan/apply",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "fdi-loan",
+                "apply"
+              ]
+            },
+            "description": "Bank selector on \"Other\": send transactionBankOther — the server merges it into transactionBankName."
+          }
+        },
+        {
+          "name": "My Applications (list)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/fdi-loan/applications",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "fdi-loan",
+                "applications"
+              ]
+            },
+            "description": "All FDI Loan applications of the logged-in user."
+          }
+        },
+        {
+          "name": "Admin — All Applications",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/fdi-loans",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "fdi-loans"
+              ]
+            },
+            "description": "Admin list for FDI Loan."
+          }
+        }
+      ]
+    },
+    {
       "name": "Lease Rental Discounting",
       "item": [
         {
@@ -3123,7 +3402,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"loanAmount\": 1000000,\n  \"loanTenure\": 60,\n  \"employmentType\": \"Salaried\",\n  \"vehicleType\": \"SUV\",\n  \"vehicleTypeOther\": \"\",\n  \"transmissionType\": \"Automatic\",\n  \"transmissionTypeOther\": \"\",\n  \"manufacturer\": \"Hyundai\",\n  \"model\": \"Creta\",\n  \"vehiclePurchaseType\": \"New Vehicle\",\n  \"vehiclePurchaseTypeOther\": \"\",\n  \"companyName\": \"ABC Corp\",\n  \"companyType\": \"Private Limited\",\n  \"companyTypeOther\": \"\",\n  \"monthlySalary\": 75000,\n  \"salaryReceivedAs\": \"Bank Transfer\",\n  \"salaryReceivedAsOther\": \"\",\n  \"salaryBankName\": \"HDFC Bank\",\n  \"salaryBankOther\": \"\",\n  \"fullName\": \"Rahul Sharma\",\n  \"mobile\": \"9876543210\",\n  \"email\": \"rahul@example.com\",\n  \"dob\": \"1992-06-15\",\n  \"panNumber\": \"ABCDE1234F\",\n  \"state\": \"Maharashtra\",\n  \"city\": \"Pune\",\n  \"pincode\": \"411001\",\n  \"residenceStatus\": \"Owned\"\n}",
+              "raw": "{\n  \"loanAmount\": 1000000,\n  \"loanTenure\": 60,\n  \"employmentType\": \"Salaried\",\n  \"vehicleType\": \"SUV\",\n  \"vehicleTypeOther\": \"\",\n  \"transmissionType\": \"Automatic\",\n  \"transmissionTypeOther\": \"\",\n  \"fuelType\": \"Petrol\",\n  \"fuelTypeOther\": \"\",\n  \"manufacturer\": \"Hyundai\",\n  \"model\": \"Creta\",\n  \"vehiclePurchaseType\": \"New Vehicle\",\n  \"vehiclePurchaseTypeOther\": \"\",\n  \"companyName\": \"ABC Corp\",\n  \"companyType\": \"Private Limited\",\n  \"companyTypeOther\": \"\",\n  \"monthlySalary\": 75000,\n  \"salaryReceivedAs\": \"Bank Transfer\",\n  \"salaryReceivedAsOther\": \"\",\n  \"salaryBankName\": \"HDFC Bank\",\n  \"salaryBankOther\": \"\",\n  \"fullName\": \"Rahul Sharma\",\n  \"mobile\": \"9876543210\",\n  \"email\": \"rahul@example.com\",\n  \"dob\": \"1992-06-15\",\n  \"panNumber\": \"ABCDE1234F\",\n  \"state\": \"Maharashtra\",\n  \"city\": \"Pune\",\n  \"pincode\": \"411001\",\n  \"residenceStatus\": \"Owned\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -3160,7 +3439,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"loanAmount\": 1000000,\n  \"loanTenure\": 60,\n  \"employmentType\": \"Self Employed - Business\",\n  \"vehicleType\": \"SUV\",\n  \"vehicleTypeOther\": \"\",\n  \"transmissionType\": \"Automatic\",\n  \"transmissionTypeOther\": \"\",\n  \"manufacturer\": \"Hyundai\",\n  \"model\": \"Creta\",\n  \"vehiclePurchaseType\": \"New Vehicle\",\n  \"vehiclePurchaseTypeOther\": \"\",\n  \"businessType\": \"Proprietorship\",\n  \"businessTypeOther\": \"\",\n  \"businessName\": \"Aarav Traders\",\n  \"gstNumber\": \"\",\n  \"companyPanNumber\": \"ABCDE1234F\",\n  \"natureOfBusiness\": \"Retail\",\n  \"natureOfBusinessOther\": \"\",\n  \"industryType\": \"Trading\",\n  \"industryTypeOther\": \"\",\n  \"subIndustry\": \"\",\n  \"businessEstablishedDate\": \"2018-05-12\",\n  \"lastYearTurnover\": 2500000,\n  \"last2YearsTurnover\": 2300000,\n  \"lastYearNetIncome\": 350000,\n  \"last2YearsNetIncome\": 300000,\n  \"businessState\": \"Maharashtra\",\n  \"businessCity\": \"Pune\",\n  \"businessPincode\": \"411001\",\n  \"businessPincodeOther\": \"\",\n  \"businessPlaceStatus\": \"Owned\",\n  \"businessPlaceStatusOther\": \"\",\n  \"transactionBankName\": \"Multiple Transaction Banks\",\n  \"transactionBanks\": [\n    \"HDFC Bank\",\n    \"State Bank of India\",\n    \"ICICI Bank\"\n  ],\n  \"fullName\": \"Rahul Sharma\",\n  \"mobile\": \"9876543210\",\n  \"email\": \"rahul@example.com\",\n  \"dob\": \"1992-06-15\",\n  \"panNumber\": \"ABCDE1234F\",\n  \"state\": \"Maharashtra\",\n  \"city\": \"Pune\",\n  \"pincode\": \"411001\",\n  \"residenceStatus\": \"Owned\"\n}",
+              "raw": "{\n  \"loanAmount\": 1000000,\n  \"loanTenure\": 60,\n  \"employmentType\": \"Self Employed - Business\",\n  \"vehicleType\": \"SUV\",\n  \"vehicleTypeOther\": \"\",\n  \"transmissionType\": \"Automatic\",\n  \"transmissionTypeOther\": \"\",\n  \"fuelType\": \"Petrol\",\n  \"fuelTypeOther\": \"\",\n  \"manufacturer\": \"Hyundai\",\n  \"model\": \"Creta\",\n  \"vehiclePurchaseType\": \"New Vehicle\",\n  \"vehiclePurchaseTypeOther\": \"\",\n  \"businessType\": \"Proprietorship\",\n  \"businessTypeOther\": \"\",\n  \"businessName\": \"Aarav Traders\",\n  \"gstNumber\": \"\",\n  \"companyPanNumber\": \"ABCDE1234F\",\n  \"natureOfBusiness\": \"Retail\",\n  \"natureOfBusinessOther\": \"\",\n  \"industryType\": \"Trading\",\n  \"industryTypeOther\": \"\",\n  \"subIndustry\": \"\",\n  \"businessEstablishedDate\": \"2018-05-12\",\n  \"lastYearTurnover\": 2500000,\n  \"last2YearsTurnover\": 2300000,\n  \"lastYearNetIncome\": 350000,\n  \"last2YearsNetIncome\": 300000,\n  \"businessState\": \"Maharashtra\",\n  \"businessCity\": \"Pune\",\n  \"businessPincode\": \"411001\",\n  \"businessPincodeOther\": \"\",\n  \"businessPlaceStatus\": \"Owned\",\n  \"businessPlaceStatusOther\": \"\",\n  \"transactionBankName\": \"Multiple Transaction Banks\",\n  \"transactionBanks\": [\n    \"HDFC Bank\",\n    \"State Bank of India\",\n    \"ICICI Bank\"\n  ],\n  \"fullName\": \"Rahul Sharma\",\n  \"mobile\": \"9876543210\",\n  \"email\": \"rahul@example.com\",\n  \"dob\": \"1992-06-15\",\n  \"panNumber\": \"ABCDE1234F\",\n  \"state\": \"Maharashtra\",\n  \"city\": \"Pune\",\n  \"pincode\": \"411001\",\n  \"residenceStatus\": \"Owned\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -3197,7 +3476,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"loanAmount\": 1000000,\n  \"loanTenure\": 60,\n  \"employmentType\": \"Self Employed - Professional\",\n  \"vehicleType\": \"SUV\",\n  \"vehicleTypeOther\": \"\",\n  \"transmissionType\": \"Automatic\",\n  \"transmissionTypeOther\": \"\",\n  \"manufacturer\": \"Hyundai\",\n  \"model\": \"Creta\",\n  \"vehiclePurchaseType\": \"New Vehicle\",\n  \"vehiclePurchaseTypeOther\": \"\",\n  \"profession\": \"Doctor\",\n  \"professionOther\": \"\",\n  \"currentYearTurnover\": 500000,\n  \"priorYearTurnover\": 450000,\n  \"currentYearNetIncome\": 70000,\n  \"previousYearNetIncome\": 65000,\n  \"businessState\": \"Maharashtra\",\n  \"businessCity\": \"Pune\",\n  \"businessPincode\": \"411001\",\n  \"businessPincodeOther\": \"\",\n  \"businessPlaceStatus\": \"Owned\",\n  \"businessPlaceStatusOther\": \"\",\n  \"transactionBankName\": \"Multiple Transaction Banks\",\n  \"transactionBanks\": [\n    \"HDFC Bank\",\n    \"State Bank of India\",\n    \"ICICI Bank\"\n  ],\n  \"fullName\": \"Rahul Sharma\",\n  \"mobile\": \"9876543210\",\n  \"email\": \"rahul@example.com\",\n  \"dob\": \"1992-06-15\",\n  \"panNumber\": \"ABCDE1234F\",\n  \"state\": \"Maharashtra\",\n  \"city\": \"Pune\",\n  \"pincode\": \"411001\",\n  \"residenceStatus\": \"Owned\"\n}",
+              "raw": "{\n  \"loanAmount\": 1000000,\n  \"loanTenure\": 60,\n  \"employmentType\": \"Self Employed - Professional\",\n  \"vehicleType\": \"SUV\",\n  \"vehicleTypeOther\": \"\",\n  \"transmissionType\": \"Automatic\",\n  \"transmissionTypeOther\": \"\",\n  \"fuelType\": \"Petrol\",\n  \"fuelTypeOther\": \"\",\n  \"manufacturer\": \"Hyundai\",\n  \"model\": \"Creta\",\n  \"vehiclePurchaseType\": \"New Vehicle\",\n  \"vehiclePurchaseTypeOther\": \"\",\n  \"profession\": \"Doctor\",\n  \"professionOther\": \"\",\n  \"currentYearTurnover\": 500000,\n  \"priorYearTurnover\": 450000,\n  \"currentYearNetIncome\": 70000,\n  \"previousYearNetIncome\": 65000,\n  \"businessState\": \"Maharashtra\",\n  \"businessCity\": \"Pune\",\n  \"businessPincode\": \"411001\",\n  \"businessPincodeOther\": \"\",\n  \"businessPlaceStatus\": \"Owned\",\n  \"businessPlaceStatusOther\": \"\",\n  \"transactionBankName\": \"Multiple Transaction Banks\",\n  \"transactionBanks\": [\n    \"HDFC Bank\",\n    \"State Bank of India\",\n    \"ICICI Bank\"\n  ],\n  \"fullName\": \"Rahul Sharma\",\n  \"mobile\": \"9876543210\",\n  \"email\": \"rahul@example.com\",\n  \"dob\": \"1992-06-15\",\n  \"panNumber\": \"ABCDE1234F\",\n  \"state\": \"Maharashtra\",\n  \"city\": \"Pune\",\n  \"pincode\": \"411001\",\n  \"residenceStatus\": \"Owned\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -3234,7 +3513,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"loanAmount\": 1000000,\n  \"loanTenure\": 60,\n  \"employmentType\": \"Salaried\",\n  \"vehicleType\": \"Other\",\n  \"vehicleTypeOther\": \"Tractor\",\n  \"transmissionType\": \"Other\",\n  \"transmissionTypeOther\": \"CVT\",\n  \"manufacturer\": \"Hyundai\",\n  \"model\": \"Creta\",\n  \"vehiclePurchaseType\": \"Other\",\n  \"vehiclePurchaseTypeOther\": \"Lease\",\n  \"companyName\": \"ABC Corp\",\n  \"companyType\": \"Private Limited\",\n  \"companyTypeOther\": \"\",\n  \"monthlySalary\": 75000,\n  \"salaryReceivedAs\": \"Bank Transfer\",\n  \"salaryReceivedAsOther\": \"\",\n  \"salaryBankName\": \"HDFC Bank\",\n  \"salaryBankOther\": \"\",\n  \"fullName\": \"Rahul Sharma\",\n  \"mobile\": \"9876543210\",\n  \"email\": \"rahul@example.com\",\n  \"dob\": \"1992-06-15\",\n  \"panNumber\": \"ABCDE1234F\",\n  \"state\": \"Maharashtra\",\n  \"city\": \"Pune\",\n  \"pincode\": \"411001\",\n  \"residenceStatus\": \"Owned\"\n}",
+              "raw": "{\n  \"loanAmount\": 1000000,\n  \"loanTenure\": 60,\n  \"employmentType\": \"Salaried\",\n  \"vehicleType\": \"Other\",\n  \"vehicleTypeOther\": \"Tractor\",\n  \"transmissionType\": \"Other\",\n  \"transmissionTypeOther\": \"CVT\",\n  \"fuelType\": \"Other\",\n  \"fuelTypeOther\": \"CNG Kit\",\n  \"manufacturer\": \"Hyundai\",\n  \"model\": \"Creta\",\n  \"vehiclePurchaseType\": \"Other\",\n  \"vehiclePurchaseTypeOther\": \"Lease\",\n  \"companyName\": \"ABC Corp\",\n  \"companyType\": \"Private Limited\",\n  \"companyTypeOther\": \"\",\n  \"monthlySalary\": 75000,\n  \"salaryReceivedAs\": \"Bank Transfer\",\n  \"salaryReceivedAsOther\": \"\",\n  \"salaryBankName\": \"HDFC Bank\",\n  \"salaryBankOther\": \"\",\n  \"fullName\": \"Rahul Sharma\",\n  \"mobile\": \"9876543210\",\n  \"email\": \"rahul@example.com\",\n  \"dob\": \"1992-06-15\",\n  \"panNumber\": \"ABCDE1234F\",\n  \"state\": \"Maharashtra\",\n  \"city\": \"Pune\",\n  \"pincode\": \"411001\",\n  \"residenceStatus\": \"Owned\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -3271,7 +3550,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"loanAmount\": 1000000,\n  \"loanTenure\": 60,\n  \"employmentType\": \"Salaried\",\n  \"vehicleType\": \"SUV\",\n  \"vehicleTypeOther\": \"\",\n  \"transmissionType\": \"Automatic\",\n  \"transmissionTypeOther\": \"\",\n  \"manufacturer\": \"Hyundai\",\n  \"model\": \"Creta\",\n  \"vehiclePurchaseType\": \"New Vehicle\",\n  \"vehiclePurchaseTypeOther\": \"\",\n  \"companyName\": \"ABC Corp\",\n  \"companyType\": \"Private Limited\",\n  \"companyTypeOther\": \"\",\n  \"monthlySalary\": 75000,\n  \"salaryReceivedAs\": \"Bank Transfer\",\n  \"salaryReceivedAsOther\": \"\",\n  \"salaryBankName\": \"HDFC Bank\",\n  \"salaryBankOther\": \"\",\n  \"fullName\": \"Rahul Sharma\",\n  \"mobile\": \"9876543210\",\n  \"email\": \"rahul@example.com\",\n  \"dob\": \"1992-06-15\",\n  \"panNumber\": \"ABCDE1234F\",\n  \"state\": \"Maharashtra\",\n  \"city\": \"Pune\",\n  \"pincode\": \"411001\",\n  \"residenceStatus\": \"Owned\",\n  \"transactionBankName\": {\n    \"displayName\": \"Multiple Transaction Banks\",\n    \"banks\": [\n      \"HDFC Bank\",\n      \"State Bank of India\",\n      \"ICICI Bank\"\n    ]\n  }\n}",
+              "raw": "{\n  \"loanAmount\": 1000000,\n  \"loanTenure\": 60,\n  \"employmentType\": \"Salaried\",\n  \"vehicleType\": \"SUV\",\n  \"vehicleTypeOther\": \"\",\n  \"transmissionType\": \"Automatic\",\n  \"transmissionTypeOther\": \"\",\n  \"fuelType\": \"Petrol\",\n  \"fuelTypeOther\": \"\",\n  \"manufacturer\": \"Hyundai\",\n  \"model\": \"Creta\",\n  \"vehiclePurchaseType\": \"New Vehicle\",\n  \"vehiclePurchaseTypeOther\": \"\",\n  \"companyName\": \"ABC Corp\",\n  \"companyType\": \"Private Limited\",\n  \"companyTypeOther\": \"\",\n  \"monthlySalary\": 75000,\n  \"salaryReceivedAs\": \"Bank Transfer\",\n  \"salaryReceivedAsOther\": \"\",\n  \"salaryBankName\": \"HDFC Bank\",\n  \"salaryBankOther\": \"\",\n  \"fullName\": \"Rahul Sharma\",\n  \"mobile\": \"9876543210\",\n  \"email\": \"rahul@example.com\",\n  \"dob\": \"1992-06-15\",\n  \"panNumber\": \"ABCDE1234F\",\n  \"state\": \"Maharashtra\",\n  \"city\": \"Pune\",\n  \"pincode\": \"411001\",\n  \"residenceStatus\": \"Owned\",\n  \"transactionBankName\": {\n    \"displayName\": \"Multiple Transaction Banks\",\n    \"banks\": [\n      \"HDFC Bank\",\n      \"State Bank of India\",\n      \"ICICI Bank\"\n    ]\n  }\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -3308,7 +3587,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"loanAmount\": 1000000,\n  \"loanTenure\": 60,\n  \"employmentType\": \"Salaried\",\n  \"vehicleType\": \"SUV\",\n  \"vehicleTypeOther\": \"\",\n  \"transmissionType\": \"Automatic\",\n  \"transmissionTypeOther\": \"\",\n  \"manufacturer\": \"Hyundai\",\n  \"model\": \"Creta\",\n  \"vehiclePurchaseType\": \"New Vehicle\",\n  \"vehiclePurchaseTypeOther\": \"\",\n  \"companyName\": \"ABC Corp\",\n  \"companyType\": \"Private Limited\",\n  \"companyTypeOther\": \"\",\n  \"monthlySalary\": 75000,\n  \"salaryReceivedAs\": \"Bank Transfer\",\n  \"salaryReceivedAsOther\": \"\",\n  \"salaryBankName\": \"HDFC Bank\",\n  \"salaryBankOther\": \"\",\n  \"fullName\": \"Rahul Sharma\",\n  \"mobile\": \"9876543210\",\n  \"email\": \"rahul@example.com\",\n  \"dob\": \"1992-06-15\",\n  \"panNumber\": \"ABCDE1234F\",\n  \"state\": \"Maharashtra\",\n  \"city\": \"Pune\",\n  \"pincode\": \"411001\",\n  \"residenceStatus\": \"Owned\",\n  \"transactionBankName\": \"Other\",\n  \"transactionBankOther\": \"Yes Bank\"\n}",
+              "raw": "{\n  \"loanAmount\": 1000000,\n  \"loanTenure\": 60,\n  \"employmentType\": \"Salaried\",\n  \"vehicleType\": \"SUV\",\n  \"vehicleTypeOther\": \"\",\n  \"transmissionType\": \"Automatic\",\n  \"transmissionTypeOther\": \"\",\n  \"fuelType\": \"Petrol\",\n  \"fuelTypeOther\": \"\",\n  \"manufacturer\": \"Hyundai\",\n  \"model\": \"Creta\",\n  \"vehiclePurchaseType\": \"New Vehicle\",\n  \"vehiclePurchaseTypeOther\": \"\",\n  \"companyName\": \"ABC Corp\",\n  \"companyType\": \"Private Limited\",\n  \"companyTypeOther\": \"\",\n  \"monthlySalary\": 75000,\n  \"salaryReceivedAs\": \"Bank Transfer\",\n  \"salaryReceivedAsOther\": \"\",\n  \"salaryBankName\": \"HDFC Bank\",\n  \"salaryBankOther\": \"\",\n  \"fullName\": \"Rahul Sharma\",\n  \"mobile\": \"9876543210\",\n  \"email\": \"rahul@example.com\",\n  \"dob\": \"1992-06-15\",\n  \"panNumber\": \"ABCDE1234F\",\n  \"state\": \"Maharashtra\",\n  \"city\": \"Pune\",\n  \"pincode\": \"411001\",\n  \"residenceStatus\": \"Owned\",\n  \"transactionBankName\": \"Other\",\n  \"transactionBankOther\": \"Yes Bank\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
