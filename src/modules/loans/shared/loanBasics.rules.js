@@ -11,8 +11,8 @@ const { body } = require("express-validator");
  *   loanTenureMax                  — optional upper bound (e.g. OD/CC Limit
  *                                    allows a 3-40 year renewal tenure)
  *
- * `loanTenure` is always MONTHS, so a dashboard "3-40 years" range is stored
- * in the config as min 36 / max 480.
+ * `loanTenure` is always YEARS, so a dashboard "3-40 years" range is stored
+ * in the config as min 3 / max 40.
  * ========================================================================= */
 
 const loanBasicsRules = (config) => {

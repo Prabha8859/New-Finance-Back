@@ -7,7 +7,7 @@
 
 const mongoose = require("mongoose");
 
-/** Fields the applicant always fills (loanTenure is stored in MONTHS). */
+/** Fields the applicant always fills (loanTenure is stored in YEARS). */
 const LOAN_FIELD_NAMES = ["loanAmount", "loanTenure"];
 
 /** Set by the server / route, never by the applicant. */

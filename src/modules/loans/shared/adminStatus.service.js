@@ -115,6 +115,11 @@ const RESOURCE_ROUTES = {
     label: "FDI loan",
     exportName: "FdiLoans",
   },
+  "film-fundings": {
+    productKey: "filmFunding",
+    label: "Film funding",
+    exportName: "FilmFundings",
+  },
 };
 
 const isValidObjectId = (value) =>

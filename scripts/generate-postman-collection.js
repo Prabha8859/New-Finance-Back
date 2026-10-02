@@ -283,8 +283,9 @@ const buildApplyBody = (config, employmentType) => {
     body.loanAmount = config.loanAmountMin === 1 ? 1000000 : config.loanAmountMin * 10;
   }
   if (config.loanTenureRequired !== false) {
+    // Tenure is in YEARS now — clamp the sample inside the product bounds.
     body.loanTenure = Math.min(
-      config.loanTenureMin < 12 ? 60 : config.loanTenureMin * 12,
+      Math.max(config.loanTenureMin, 5),
       config.loanTenureMax ?? Infinity
     );
   }
