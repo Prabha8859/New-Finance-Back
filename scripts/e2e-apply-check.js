@@ -86,7 +86,7 @@ const cases = [
     name: "2. HOME / Salaried (dashboard quick form: loanTenureYears + monthlyNetSalary)",
     path: "/api/home-loan/apply",
     expect: 201,
-    check: (body) => body.data.loanTenure === 60 || `loanTenure=${body.data.loanTenure}`,
+    check: (body) => body.data.loanTenure === 5 || `loanTenure=${body.data.loanTenure}`,
     body: {
       loanAmount: 3000000,
       loanTenureYears: 5,
@@ -180,7 +180,7 @@ const cases = [
     expect: 201,
     body: {
       loanAmount: 500000,
-      loanTenure: 60,
+      loanTenure: 5,
       employmentType: "Salaried",
       companyName: "ABC Corp",
       companyType: "Private Limited",
@@ -374,7 +374,7 @@ const cases = [
       body.data.projectType === "Hotel Project" || `projectType=${body.data.projectType}`,
     body: {
       loanAmount: 7500000,
-      loanTenure: 180,
+      loanTenure: 15,
       projectType: "Other",
       projectTypeOther: "Hotel Project",
       totalProjectCost: 15000000,
@@ -443,7 +443,7 @@ const cases = [
     check: (body) => body.data.vehicleType === "Tractor" || `vehicleType=${body.data.vehicleType}`,
     body: {
       loanAmount: 1200000,
-      loanTenure: 60,
+      loanTenure: 5,
       vehicleType: "Other",
       vehicleTypeOther: "Tractor",
       vehiclePurchaseType: "Used Vehicle",
@@ -517,7 +517,7 @@ const cases = [
         : `country=${body.data.educationCountry} study=${body.data.fieldOfStudy}`,
     body: {
       loanAmount: 2500000,
-      loanTenure: 96,
+      loanTenure: 8,
       educationCountry: "Other",
       educationCountryOther: "Italy",
       fieldOfStudy: "Other",
@@ -652,7 +652,7 @@ const cases = [
       body.data.buyingPropertyType === "Warehouse" || `buyingPropertyType=${body.data.buyingPropertyType}`,
     body: {
       loanAmount: 9000000,
-      loanTenure: 120,
+      loanTenure: 10,
       buyingPropertyType: "Other",
       buyingPropertyTypeOther: "Warehouse",
       buyingPropertyMarketValue: 12000000,
@@ -725,7 +725,7 @@ const cases = [
       body.data.collateralPropertyType === "Warehouse" || `collateralPropertyType=${body.data.collateralPropertyType}`,
     body: {
       loanAmount: 5000000,
-      loanTenure: 60,
+      loanTenure: 5,
       collateralPropertyType: "Other",
       collateralPropertyTypeOther: "Warehouse",
       collateralPropertyMarketValue: 9000000,
@@ -800,7 +800,7 @@ const cases = [
       body.data.leasePropertyPincode === "380099" || `leasePropertyPincode=${body.data.leasePropertyPincode}`,
     body: {
       loanAmount: 8000000,
-      loanTenure: 120,
+      loanTenure: 10,
       leasePropertyState: "Gujarat",
       leasePropertyCity: "Ahmedabad",
       leasePropertyPincode: "Other",
@@ -870,7 +870,7 @@ const cases = [
       body.data.collateralPropertyType === "Unsecured" || `collateralPropertyType=${body.data.collateralPropertyType}`,
     body: {
       loanAmount: 5000000,
-      loanTenure: 120,
+      loanTenure: 10,
       collateralPropertyType: "Unsecured",
       collateralPropertyMarketValue: 1,
       collateralPropertyAge: 0,
@@ -962,7 +962,7 @@ const cases = [
       body.data.quantityOfShare === 1200 || `quantityOfShare=${body.data.quantityOfShare}`,
     body: {
       loanAmount: 3000000,
-      loanTenure: 84,
+      loanTenure: 7,
       shareCompanyName: "Tata Consultancy Services",
       valueOfOneShare: 4000,
       quantityOfShare: 1200,
@@ -1032,7 +1032,7 @@ const cases = [
       `filmLanguages=${JSON.stringify(body.data.filmLanguages)}`,
     body: {
       loanAmount: 8000000,
-      loanTenure: 84,
+      loanTenure: 7,
       filmComesUnder: "Other",
       filmComesUnderOther: "Kannada Industry",
       filmLanguages: "Hindi, English , Kannada",
@@ -1080,7 +1080,7 @@ const cases = [
     expect: 400,
     body: {
       loanAmount: 5000000,
-      loanTenure: 60,
+      loanTenure: 5,
       filmComesUnder: "Bollywood",
       filmLanguages: ["Hindi"],
       starCastNames: ["Aamir Khan"],
@@ -1176,11 +1176,11 @@ const cases = [
     },
   },
   {
-    name: "50. GOLD LOAN / Salaried (gold payload, years -> months)",
+    name: "50. GOLD LOAN / Salaried (gold payload, tenure in years)",
     path: "/api/gold-loan/apply",
     expect: 201,
     check: (body) =>
-      (body.data.typeOfLoan === "Jewellery" && body.data.goldCarats === "22 Karat" && body.data.loanTenure === 60) ||
+      (body.data.typeOfLoan === "Jewellery" && body.data.goldCarats === "22 Karat" && body.data.loanTenure === 5) ||
       `typeOfLoan=${body.data.typeOfLoan}, goldCarats=${body.data.goldCarats}, loanTenure=${body.data.loanTenure}`,
     body: {
       loanAmount: 300000,
@@ -1207,7 +1207,7 @@ const cases = [
       `typeOfLoan=${body.data.typeOfLoan}, goldCarats=${body.data.goldCarats}`,
     body: {
       loanAmount: 500000,
-      loanTenure: 36,
+      loanTenure: 3,
       typeOfLoan: "Other",
       typeOfLoanOther: "Utensils",
       goldCarats: "Other",
@@ -1240,7 +1240,7 @@ const cases = [
     expect: 400,
     body: {
       loanAmount: 300000,
-      loanTenure: 36,
+      loanTenure: 3,
       typeOfLoan: "Coin",
       goldCarats: "24 Karat",
       collateralPropertyMarketValue: 500000,
@@ -1273,14 +1273,15 @@ const cases = [
     path: "/api/fdi-loan/apply",
     expect: 201,
     check: (body) =>
-      body.data.loanTenure === 132 &&
+      body.data.loanTenure === 11 &&
       body.data.collateralPropertyType === "Industrial Property" &&
       body.data.sections?.loanRequirements?.collateralPropertyMarketValue === 1000000000
         ? true
         : `loanTenure=${body.data?.loanTenure}, collateralPropertyType=${body.data?.collateralPropertyType}`,
     body: {
       loanAmount: 1000000000,
-      loanTenureYears: -1,
+      loanTenureYears: "-1",
+      loanTenureYearsCustom: "11",
       collateralPropertyType: "Other",
       collateralPropertyTypeOther: "Industrial Property",
       collateralPropertyMarketValue: 1000000000,
@@ -1305,7 +1306,7 @@ const cases = [
     check: (body) => {
       const item = body.data.find((application) => application.loanType === "FDI Loan");
       if (!item) return "no FDI loan application in list";
-      if (item.loanTenure !== 132) return `loanTenure=${item.loanTenure}`;
+      if (item.loanTenure !== 11) return `loanTenure=${item.loanTenure}`;
       if (!item.sections?.incomeDetails || !item.sections?.existingLoanExposure || !item.sections?.personalDetails) {
         return "shared loan sections missing from response";
       }

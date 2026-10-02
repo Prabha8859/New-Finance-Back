@@ -10,7 +10,6 @@ const LoanAgainstProperty = require("../src/modules/loans/loan-against-property/
 const LoanAgainstPropertyController = require("../src/modules/loans/loan-against-property/loanAgainstProperty.controller");
 const FdiLoan = require("../src/modules/loans/fdi-loan/fdiLoan.model");
 const { applyValidator: fdiLoanApplyValidator } = require("../src/modules/loans/fdi-loan/fdiLoan.validator");
-const normalizeFdiTenure = require("../src/modules/loans/fdi-loan/fdiLoan.tenure.middleware");
 const BusinessLoan = require("../src/modules/loans/business-loan/businessLoan.model");
 const HomeLoan = require("../src/modules/loans/home-loan/homeLoan.model");
 const { businessIncomeFields } = require("../src/modules/loans/shared/loanSchema");
@@ -94,7 +93,7 @@ describe("authValidators.registerValidator", () => {
 describe("personalLoanValidators.applyValidator", () => {
   const validPayload = {
     loanAmount: 500000,
-    loanTenure: 24,
+    loanTenure: 2,
     fullName: "Test User",
     mobile: "9876543210",
   };
@@ -518,9 +517,10 @@ describe("normalizeLoanPayload.normalizeApplyPayload", () => {
     expect(payload.businessPlaceStatus).toBe("Rented");
   });
 
-  it("converts dashboard tenure (years) into months", () => {
-    expect(normalizeApplyPayload({ loanTenureYears: 15 }).loanTenure).toBe(180);
-    expect(normalizeApplyPayload({ loanTenureYears: -1, loanTenureYearsCustom: 20 }).loanTenure).toBe(240);
+  it("stores dashboard tenure as years ('-1' selects the custom value)", () => {
+    expect(normalizeApplyPayload({ loanTenureYears: 15 }).loanTenure).toBe(15);
+    // The browser sends both values as strings (select value + free text).
+    expect(normalizeApplyPayload({ loanTenureYears: "-1", loanTenureYearsCustom: "20" }).loanTenure).toBe(20);
   });
 
   it("merges transactionBanks into transactionBankName", () => {
@@ -594,7 +594,7 @@ describe("homeLoanController.apply (dashboard quick form)", () => {
 
     expect(res.statusCode).toBe(201);
     const saved = createSpy.mock.calls[0][0];
-    expect(saved.loanTenure).toBe(180);
+    expect(saved.loanTenure).toBe(15);
     expect(saved.user).toBe("64f000000000000000000001");
     expect(saved.loanType).toBe("Home Loan");
     expect(saved.status).toBeUndefined();
@@ -631,7 +631,7 @@ describe("personalLoanController.apply (dashboard contract)", () => {
       salaryReceivedAs: "Bank Transfer",
       salaryBankName: "HDFC Bank",
       loanAmount: 500000,
-      loanTenure: 60,
+      loanTenure: 5,
       existingBanks: ["HDFC"],
       existingBanksOther: ["Yes Bank"],
       existingLoanTypes: ["Personal Loan"],
@@ -657,7 +657,7 @@ describe("salaried salary-bank rules (dashboard Cash case)", () => {
 
   const salariedPayload = (overrides = {}) => ({
     loanAmount: 1500000,
-    loanTenure: 48,
+    loanTenure: 4,
     employmentType: "Salaried",
     companyName: "Cash Co",
     companyType: "Partnership",
@@ -690,7 +690,7 @@ describe("salaried salary-bank rules (dashboard Cash case)", () => {
 
 const lapPayload = (overrides = {}) => ({
   loanAmount: 2500000,
-  loanTenure: 120,
+  loanTenure: 10,
   collateralPropertyType: "Residential",
   collateralPropertyMarketValue: 6000000,
   collateralPropertyAge: 7,
@@ -756,7 +756,7 @@ describe("loanAgainstPropertyModel", () => {
     const doc = new LoanAgainstProperty({
       user: "64f000000000000000000001",
       loanAmount: 2500000,
-      loanTenure: 120,
+      loanTenure: 10,
       employmentType: "Self Employed - Business",
       fullName: "Rohit Sharma",
       mobile: "9876543210",
@@ -856,7 +856,7 @@ describe("fdiLoan (FDI Fund Requirements)", () => {
   const fdiLoanPayload = (overrides = {}) =>
     lapPayload({
       loanAmount: 1000000000,
-      loanTenure: 120,
+      loanTenure: 10,
       collateralPropertyType: "Company Valuation",
       ...overrides,
     });
@@ -879,10 +879,12 @@ describe("fdiLoan (FDI Fund Requirements)", () => {
     expect(result.passed).toBe(false);
   });
 
-  it("normalizes the more-than-10-years option to 11 years (132 months)", () => {
-    const req = { body: { loanTenureYears: "-1" } };
-    normalizeFdiTenure(req, {}, () => {});
-    expect(normalizeApplyPayload(req.body).loanTenure).toBe(132);
+  it("normalizes the more-than-10-years option to 11 years", () => {
+    // Exactly as the deployed FDI form sends it: select value + free text, both strings.
+    const payload = normalizeApplyPayload({ loanTenureYears: "-1", loanTenureYearsCustom: "11" });
+    expect(payload.loanTenure).toBe(11);
+    expect(payload.loanTenureYears).toBeUndefined();
+    expect(payload.loanTenureYearsCustom).toBeUndefined();
   });
 
   it("validates a complete FDI application against its model", () => {
@@ -905,7 +907,7 @@ describe("fdiLoan (FDI Fund Requirements)", () => {
 describe("balanceTransfer (Transfer Requirements)", () => {
   const balanceTransferPayload = (overrides = {}) => ({
     loanAmount: 1000000,
-    loanTenure: 120,
+    loanTenure: 10,
     balanceTransferType: "Home loan",
     currentPropertyValue: 5000000,
     topUpAmount: 200000,
@@ -956,7 +958,7 @@ describe("balanceTransfer (Transfer Requirements)", () => {
 describe("projectLoan (Loan Requirements)", () => {
   const projectLoanPayload = (overrides = {}) => ({
     loanAmount: 5000000,
-    loanTenure: 120,
+    loanTenure: 10,
     projectType: "Construction Project",
     totalProjectCost: 10000000,
     projectStartDate: "2026-01-15",
@@ -1009,7 +1011,7 @@ describe("projectLoan (Loan Requirements)", () => {
 describe("vehicleLoan (Loan Requirements)", () => {
   const vehicleLoanPayload = (overrides = {}) => ({
     loanAmount: 800000,
-    loanTenure: 84,
+    loanTenure: 7,
     vehicleType: "SUV",
     transmissionType: "Automatic",
     fuelType: "Petrol",
@@ -1079,7 +1081,7 @@ describe("vehicleLoan (Loan Requirements)", () => {
 describe("educationLoan (Loan Requirements)", () => {
   const educationLoanPayload = (overrides = {}) => ({
     loanAmount: 1500000,
-    loanTenure: 120,
+    loanTenure: 10,
     educationCountry: "Canada",
     fieldOfStudy: "Computer Science / IT",
     courseName: "B.Tech Computer Science",

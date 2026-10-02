@@ -37,4 +37,23 @@ router.get("/countries", controller.listActive("countries"));
 router.get("/states", controller.listActive("states"));
 router.get("/cities", controller.listActive("cities"));
 
+/* Bare mount path (GET /api/masters/location): without this the request
+   falls through to the masters "/:type" catch-all and 404s with
+   `Master "location" not found`. Answer with the endpoint index instead. */
+router.get("/", (req, res) => {
+  res.json({
+    success: true,
+    message: "Location masters API — use one of the endpoints below.",
+    endpoints: [
+      "GET /pincode/:pincode",
+      "GET /pincode?q=<search>",
+      "POST /pincode/validate",
+      "GET /continents",
+      "GET /countries?continentId=<id>",
+      "GET /states?countryId=<id>",
+      "GET /cities?stateId=<id>",
+    ],
+  });
+});
+
 module.exports = router;

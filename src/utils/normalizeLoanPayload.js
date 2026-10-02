@@ -101,13 +101,16 @@ const normalizeApplyPayload = (body) => {
     }
   });
 
-  // 3. Tenure: the dashboard sends years and multiplies by 12 (months).
-  //    `loanTenure` always means months for every product.
+  // 3. Tenure: the dashboard sends years and `loanTenure` stores YEARS for
+  //    every product. "More than N years" selectors send -1 (as a string from
+  //    the browser) plus a free-text `loanTenureYearsCustom`.
   const tenureYears =
-    payload.loanTenureYears === -1 ? payload.loanTenureYearsCustom : payload.loanTenureYears;
+    String(payload.loanTenureYears ?? "").trim() === "-1"
+      ? payload.loanTenureYearsCustom
+      : payload.loanTenureYears;
   if (payload.loanTenure === undefined && tenureYears !== undefined && tenureYears !== null && tenureYears !== "") {
     const years = Number(tenureYears);
-    if (Number.isFinite(years) && years > 0) payload.loanTenure = years * 12;
+    if (Number.isFinite(years) && years > 0) payload.loanTenure = years;
   }
   TENURE_YEAR_FIELDS.forEach((field) => delete payload[field]);
 
